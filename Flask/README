@@ -1,0 +1,4 @@
+#!/bin/bash
+# You need to install the following packages
+pip install flask
+pip install flask_wtf

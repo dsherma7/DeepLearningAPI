@@ -1,0 +1,85 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+
+    <div class="row">
+    	<h2>Test Web Form</h2>                
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <h4><font color='blue'>{{ message }} </font></h4>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+   	</div> <!-- Header -->
+
+
+    <form action="#" method="post" name="Sub" enctype=multipart/form-data>
+    {{ form.csrf_token }}
+    {{ form.name }}
+    <div class="col-lg-6">
+    <div class="panel panel-default">
+    <div class="panel-body">
+    	<h4> This is a table </h4>
+    	<table class="table table-default">	                
+            <tr>
+                <th>Name:</th>
+                <td>{{ form.Name }}<br>
+                	<!-- Error Handling -->
+                    {% for error in form.Name.errors %} 
+                        <small><span style="color: red;">[{{ error }}]</span></small>
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <th>Layer Type:</th>
+                <td>{{ form.LayerType }}</td>
+            </tr>
+            <tr>
+                <th>Drop-Down:</th>
+                <td>{{ form.DropDown }}</td>
+            </tr>
+            <tr>
+                <th>A Checkbox:</th>
+                <td>{{ form.CheckBox }}</td>
+            </tr>
+            <tr>
+                <th>Import:</th>
+                <td>{{ form.Files }}<br>
+                	<!-- Error Handling -->
+                    {% for error in form.Files.errors %} 
+                        <small><span style="color: red;">[{{ error }}]</span></small>
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
+                <th>Date:</th>
+                <td>{{ form.Date }}<br>
+                	<!-- Error Handling -->
+                    {% for error in form.Date.errors %} 
+                        <small><span style="color: red;">[{{ error }}]</span></small>
+                    {% endfor %}
+                </td>
+            </tr>    
+        </table>
+
+        <div class='row'>                        		
+            <div class='col-sm-6' align='center'> 
+                <input  type="submit" name="submit" value="Submit">                       
+            </div><!-- Submit Button -->                	
+            <div class='col-sm-6' align='center'> 
+                <input type="button" value="Clear" onclick="document.location='.';" data-toggle="tooltip"  data-placement="right" title="Resets all elements to their default values.">
+            </div><!-- Reset Button -->       
+            <br>
+        </div> <!-- row (submit) -->
+
+
+    </div> <!-- Panel-Body -->
+	</div> <!-- panel-default -->
+	</div> <!-- <div> col-lg-12 -->	        	        
+    </form>    
+
+{% endblock %}
