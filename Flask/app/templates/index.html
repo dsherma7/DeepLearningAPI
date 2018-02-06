@@ -24,7 +24,7 @@
     <div class="panel panel-default">
     <div class="panel-body">
     	<h4> This is a table </h4>
-    	<table class="table table-default">	                
+    	<table class="table table-striped">	                
             <tr>
                 <th>Name:</th>
                 <td>{{ form.Name }}<br>
@@ -35,8 +35,14 @@
                 </td>
             </tr>
             <tr>
+                <th>Input Size:</th>
+                <td>{{ form.InputSize }}</td>
+            </tr>
+            <tr>
                 <th>Layer Type:</th>
-                <td>{{ form.LayerType }}</td>
+                <td id="layers">
+                    {{ form.LayerType }}
+                </td>
             </tr>
             <tr>
                 <th>Drop-Down:</th>
@@ -81,5 +87,7 @@
 	</div> <!-- panel-default -->
 	</div> <!-- <div> col-lg-12 -->	        	        
     </form>    
+
+
 
 {% endblock %}

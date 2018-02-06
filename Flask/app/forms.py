@@ -20,10 +20,13 @@ class MainForm(FlaskForm):
     '''
     # Note: For these choices elements, the pairs are ('Variable Name','What the User Sees')
 
-    LayerTypes = [('rad_Conv','Convolutional'), ('rad_Full','Fully Connected')]
+    Sizes      = [('1D','1D'),('2D','2D'),('3D','3D')]
+    LayerTypes = [('Select','Select a Layer'), ('Conv','Convolutional'), ('Dense','Fully Connected'), ('MaxPool','Max Pooling'), ('Drop','Dropout')]
     DropDowns  = [("dd_Choice1","Choice1"),("dd_Choice2","Choice2")]
 
-    LayerType = RadioField('LayerType', choices=LayerTypes, default='rad_Conv')
+
+    InputSize = SelectField('InputSize', choices=Sizes, default="2D")
+    LayerType = SelectField('LayerType', choices=LayerTypes, default='Select')
     DropDown  = SelectField('DropDown', choices=DropDowns)
     Name      = StringField('Name', validators=[DataRequired("Error msg if no input")])    
     CheckBox  = BooleanField('CheckBox',default=False)
