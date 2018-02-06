@@ -16,7 +16,6 @@
         {% endwith %}
    	</div> <!-- Header -->
 
-
     <form action="#" method="post" name="Sub" enctype=multipart/form-data>
     {{ form.csrf_token }}
     {{ form.name }}
@@ -35,6 +34,15 @@
                 </td>
             </tr>
             <tr>
+                <th>Date:</th>
+                <td>{{ form.Date }}<br>
+                    <!-- Error Handling -->
+                    {% for error in form.Date.errors %} 
+                        <small><span style="color: red;">[{{ error }}]</span></small>
+                    {% endfor %}
+                </td>
+            </tr>
+            <tr>
                 <th>Input Size:</th>
                 <td>{{ form.InputSize }}</td>
             </tr>
@@ -45,12 +53,15 @@
                 </td>
             </tr>
             <tr>
-                <th>Drop-Down:</th>
-                <td>{{ form.DropDown }}</td>
+                <th>Optimizer:</th>
+                <td>{{ form.Optimizer }}</td>
             </tr>
             <tr>
-                <th>A Checkbox:</th>
-                <td>{{ form.CheckBox }}</td>
+                <th>Current Layers:</th>
+                <td>
+                    <ul id="current">
+                    </ul>
+                </td>
             </tr>
             <tr>
                 <th>Import:</th>
@@ -60,16 +71,7 @@
                         <small><span style="color: red;">[{{ error }}]</span></small>
                     {% endfor %}
                 </td>
-            </tr>
-            <tr>
-                <th>Date:</th>
-                <td>{{ form.Date }}<br>
-                	<!-- Error Handling -->
-                    {% for error in form.Date.errors %} 
-                        <small><span style="color: red;">[{{ error }}]</span></small>
-                    {% endfor %}
-                </td>
-            </tr>    
+            </tr> 
         </table>
 
         <div class='row'>                        		

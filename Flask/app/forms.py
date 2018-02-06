@@ -14,6 +14,9 @@ Components:
     DateField: Date/Time Field
 '''
 
+
+
+
 class MainForm(FlaskForm):
     '''
     Generates Substitute form. Note: PlateType not displyed
@@ -22,13 +25,12 @@ class MainForm(FlaskForm):
 
     Sizes      = [('1D','1D'),('2D','2D'),('3D','3D')]
     LayerTypes = [('Select','Select a Layer'), ('Conv','Convolutional'), ('Dense','Fully Connected'), ('MaxPool','Max Pooling'), ('Drop','Dropout')]
-    DropDowns  = [("dd_Choice1","Choice1"),("dd_Choice2","Choice2")]
+    Optimizers = [('grad','Gradient Descent'),('adam','Adam Optimizer')]
 
 
     InputSize = SelectField('InputSize', choices=Sizes, default="2D")
     LayerType = SelectField('LayerType', choices=LayerTypes, default='Select')
-    DropDown  = SelectField('DropDown', choices=DropDowns)
+    Optimizer = SelectField('Optimizer', choices=Optimizers, default="grad")
     Name      = StringField('Name', validators=[DataRequired("Error msg if no input")])    
-    CheckBox  = BooleanField('CheckBox',default=False)
     Files     = FileField('Import',validators=[FileRequired(), FileAllowed(['csv'], 'Must be in .csv format.')])
     Date      = DateField('Date',validators=[validators.InputRequired()], format='%m/%d/%Y')

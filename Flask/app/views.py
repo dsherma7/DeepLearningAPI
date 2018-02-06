@@ -28,13 +28,20 @@ def function():
 		return ""
 
 	if layer_type == "Convolutional":
+		# Name field
+		row1 = {"Name":"Name","Fields":[{"Field":"StringField"}]}
 		# A List of activation functions to choose from (defined above)
-		row1 = {"Name":"Activation","Fields":[{"Field":"SelectField","Choices":activations}]}
+		row2 = {"Name":"Activation","Fields":[{"Field":"SelectField","Choices":activations}]}
 		# A textbox for each filter dimension
-		row2 = {"Name":"Filter","Fields":[{"Field":"FilterField","Size":int(input_size[0])}]}
-		print("here")
+		row3 = {"Name":"Filter","Fields":[{"Field":"FilterField","Size":int(input_size[0])}]}
+		return jsonify(params=[row1,row2,row3])
+
+	if layer_type == "Max Pooling":
+		# Name field
+		row1 = {"Name":"Name","Fields":[{"Field":"StringField"}]}
+		# A textbox for each filter dimension
+		row2 = {"Name":"Pool Size","Fields":[{"Field":"FilterField","Size":int(input_size[0])}]}
 		return jsonify(params=[row1,row2])
 
 
-	
 	return ""

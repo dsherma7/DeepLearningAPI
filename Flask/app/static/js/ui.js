@@ -3,6 +3,7 @@ $(function() {
   $('select#LayerType').bind('change', function() {
     // Delete the previous components
     d3.select("td#layers").select("table").remove();
+    d3.select("td#layers").select("input").remove();
     // Calls any flask function preceded by @app.route('/_get_params')
     $.getJSON('/_get_params', {
       // The inputs to the Python function
@@ -16,6 +17,17 @@ $(function() {
         params["params"].forEach(function(param){
           parse_params(tbl.append("tr"),param);
         });
+
+        // Add "Add Layers" button
+        d3.select("td#layers")
+          .append("input")
+          .attr("type","button")
+          .attr("value","Add Layer")
+          .on("click",function(){
+            var layer_type =  $("select#LayerType option:selected").text();
+            add_layer(layer_type);
+          })
+
     });    
     // If failed
     return false;
@@ -70,6 +82,13 @@ function parse_params(obj,param) {
     }
 
   });
+}
 
+
+function add_layer(layer_type) {
+  // This should add the layer to a list of current layers
+  d3.select("ul#current")
+    .append('li')
+    .text(layer_type)
 
 }
