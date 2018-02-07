@@ -1,9 +1,10 @@
 $(function() {
-  // Same as on.('change') in d3
   $('select#LayerType').bind('change', function() {
+
     // Delete the previous components
     d3.select("td#layers").select("table").remove();
     d3.select("td#layers").select("input").remove();
+
     // Calls any flask function preceded by @app.route('/_get_params')
     $.getJSON('/_get_params', {
       // The inputs to the Python function
@@ -87,8 +88,26 @@ function parse_params(obj,param) {
 
 function add_layer(layer_type) {
   // This should add the layer to a list of current layers
+  
+  // Remove old list items, but save them for later
+  var lis = d3.select("ul#current").selectAll('li'),
+      txt = lis.nodes()
+  lis.remove()
+
+  // Add current layer on top
   d3.select("ul#current")
     .append('li')
     .text(layer_type)
+
+  // Add the rest back in reverse order
+  txt.forEach(function(d){
+    d3.select("ul#current")
+    .append('li')
+    .text(d.innerText)
+  })
+
+
+
+
 
 }
