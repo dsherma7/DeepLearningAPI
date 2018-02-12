@@ -74,7 +74,6 @@ def main(unused_argv):
                 'units':10
             }
         ],
-        'mode': tf.estimator.ModeKeys.TRAIN,
         'train': {
             'loss': {
                 'loss_type': 'soft_max_cross_entropy'
