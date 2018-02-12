@@ -12,7 +12,7 @@ from network import Network
 def train_network( network,x,y):
     return network.train(x,y)
 
-def eval_network( nework,x,y):
+def eval_network( network,x,y):
     return network.eval(x,y)
 
 def create_network( params):
@@ -70,6 +70,16 @@ def main(unused_argv):
                 }
             },
             {
+                'layer_type': 'fcl',
+                'units':1024,
+                'activation':tf.nn.relu,
+                'drop_out': {
+                    'rate': 0.4
+
+                }
+            },
+
+            {
                 'layer_type': 'out',
                 'units':10
             }
@@ -84,7 +94,7 @@ def main(unused_argv):
             'learning_rate':0.001,
             'batch_size':100,
             'shuffle_batch':True,
-            'training_steps': 20000
+            'training_steps': 1
         }
     }
     print('create network')
