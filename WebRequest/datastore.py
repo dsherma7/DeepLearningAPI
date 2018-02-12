@@ -100,13 +100,26 @@ def add_user(user,params):
 
 def delete_job(user,job):
 	key = client.key('jobs', user+job)
-    client.delete(key)
+	client.delete(key)
 
 def delete_user(user):
 	key = client.key('users', user)
-    client.delete(key)	
+	client.delete(key)	
 
 # For the python server to use to change the DB
+def get_architecture(user,job):
+	'''
+		Returns the necessary config parameters for a 
+		job for a given user. Output is of the form
+		{train:{}, layers:[]} where train is a set of
+		global paramaters (like optimizer) and layers
+		is a list of params for each layer.
+	'''
+	job = get_job(user,job)
+	description = {x:job[x] for x in job if 'layer' not in x}
+	layers = [job[x] for x in job if 'layer' in x]
+	return ({'train':description,'layers':layers})
+
 def change_status(user,job,status):
 	job = helper.parse_JobId(job)
 	with client.transaction():
