@@ -18,7 +18,6 @@ USER_DATA_PATH = utils.USER_DATA_PATH
 class Network:
     def __init__(self,username,job,params):
         user_sub_path = utils.create_user_sub_path(username, job)
-        # self.classifier =None
         self.params = params
         self.classifier = tf.estimator.Estimator(
             model_fn=self.model, model_dir=USER_DATA_PATH+user_sub_path+'/model')
@@ -86,7 +85,6 @@ class Network:
         self.classifier.train(
             input_fn=train_input_fn,
             steps=self.params['train']['training_steps'])
-            #hooks=[logging_hook])
 
     def eval(self,x, y):
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
