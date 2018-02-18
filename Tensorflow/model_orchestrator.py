@@ -4,111 +4,50 @@ from __future__ import print_function
 
 import numpy as np
 import sys
-import tensorflow as tf
+sys.path.insert(0, '../WebRequest')
 import random
 from network import Network
-
-
-def train_network( network,x,y):
-    return network.train(x,y)
-
-def eval_network( network,x,y):
-    return network.eval(x,y)
-
-def create_network( params):
-    return Network(params)
+import pickle as pickle
+import user_space_handler as us
+import user_space_utils as utils
 
 
 
 
-# adapted the mnist tutorial to create a configurable convolutional neural network 
-# over the mnist dataset  : https://www.tensorflow.org/tutorials/layers
+def publish_data(obj, username, job, data_set_type, data_type):
+    if (not utils.does_path_exist(username, job)):
+        us.create_user_space(username, job)
+    us.save_object(obj, username, job,data_set_type, data_type)
 
-def main(unused_argv):
-    mnist = tf.contrib.learn.datasets.load_dataset("mnist")
-    train_data = mnist.train.images  # Returns np.array
-    train_labels = np.asarray(mnist.train.labels, dtype=np.int32)
-    eval_data = mnist.test.images  # Returns np.array
-    eval_labels = np.asarray(mnist.test.labels, dtype=np.int32)
-    params = {
-        'layers': [
-            {
-                'layer_type': 'input',
-                'shape': [-1, 28, 28, 1]
-            },
-            {
-                'layer_type': 'conv2d',
-                'filters':32,
-                'kernel_size':[5, 5],
-                'padding': "same",
-                'activation': tf.nn.relu
-            },
-            {
-                'layer_type': 'pool2d',
-                'pool_size':[2, 2],
-                'strides':2
-            },
-            {
-                'layer_type': 'conv2d',
-                'filters':64,
-                'kernel_size':[5, 5],
-                'padding': "same",
-                'activation': tf.nn.relu
-            },
-            {
-                'layer_type': 'pool2d',
-                'pool_size':[2, 2],
-                'strides':2
-            },
-            {
-                'layer_type': 'fcl',
-                'units':1024,
-                'activation':tf.nn.relu,
-                'drop_out': {
-                    'rate': 0.4
 
-                }
-            },
-            {
-                'layer_type': 'fcl',
-                'units':1024,
-                'activation':tf.nn.relu,
-                'drop_out': {
-                    'rate': 0.4
+def train_network(username, job, data_set_type):
+    data, network, labels = us.get_user_space_data(username, job, data_set_type)
+    network.train(data,labels)
 
-                }
-            },
+def eval_network(username, job, data_set_type):
+    data, network, labels = us.get_user_space_data(username, job, data_set_type)
+    return network.eval(data,labels)
 
-            {
-                'layer_type': 'out',
-                'units':10
-            }
-        ],
-        'train': {
-            'loss': {
-                'loss_type': 'soft_max_cross_entropy'
-            },
-            'optimizer': {
-                'train_type': 'gradient_descent'
-            },
-            'learning_rate':0.001,
-            'batch_size':100,
-            'shuffle_batch':True,
-            'training_steps': 1
-        }
-    }
+# returns an array of objects:
+#   - {'classes'[[the predicted class as an int]], 
+#       'probabilities:[[the probabilities of each class as a array of floats]]'
+#     }
+def predict(username, job, data_set_type):
+    data, network, _ = us.get_user_space_data(username, job, data_set_type)
+    expression = network.predict(data)
+    out = []
+    for i in expression:
+        out.append(i)
+    return out
+
+def create_network(username, job):
+    params = us.get_architecture(username, job)
     print('create network')
-    network  = create_network(params)
-    classifier = tf.estimator.Estimator(
-        model_fn=network.model)
-    print('train')
-    train_network(network,train_data,train_labels)
-    print('evaluate')
-    print(eval_network(network,eval_data,eval_labels))
+    Network(username,job,params=params)
 
 
-if __name__ == "__main__":
-    tf.app.run()
+
+
 
 
 
