@@ -9,9 +9,11 @@ USER_DATA_PATH = utils.USER_DATA_PATH
 
 
 def create_user_space(username, job):
-    os.makedirs(USER_DATA_PATH+'/'+username)
-    os.makedirs(USER_DATA_PATH+'/'+username+'/'+job)
-    os.makedirs(USER_DATA_PATH+'/'+username+'/'+job+'/model')
+    if not os.path.exists(USER_DATA_PATH+'/'+username):
+        os.makedirs(USER_DATA_PATH+'/'+username)
+    if not os.path.exists(USER_DATA_PATH+'/'+username+'/'+job):
+        os.makedirs(USER_DATA_PATH+'/'+username+'/'+job)
+        os.makedirs(USER_DATA_PATH+'/'+username+'/'+job+'/model')
 
 def get_user_space_data(username, job, data_set_type, y=True):
     data = load_data(username,job, data_set_type, 'x' )

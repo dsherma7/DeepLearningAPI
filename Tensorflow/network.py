@@ -54,7 +54,7 @@ class Network:
                 prev_layer_out = tf.layers.dense(inputs=prev_layer_out, units=i['units'])
 
         predictions =  {
-            "classes": tf.argmax(input=prev_layer_out, axis=1),
+            "class": tf.argmax(input=prev_layer_out, axis=1),
             "probabilities": tf.nn.softmax(prev_layer_out, name="softmax_tensor")
         }
         if mode == tf.estimator.ModeKeys.PREDICT:
@@ -72,7 +72,7 @@ class Network:
             return tf.estimator.EstimatorSpec(mode=mode, loss=loss, train_op=train_op)
         eval_metric_ops = {
             "accuracy": tf.metrics.accuracy(
-                labels=labels, predictions=predictions["classes"])}
+                labels=labels, predictions=predictions["class"])}
         return tf.estimator.EstimatorSpec(
             mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
 

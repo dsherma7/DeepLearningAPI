@@ -5,6 +5,7 @@ import pickle as pickle
 from sklearn.model_selection import train_test_split
 
 
+#These commands are just to create us example data
 def load_data(filename):
     with (open(filename, "rb")) as openfile: 
         return pickle.load(openfile)
@@ -14,7 +15,7 @@ X_train, X_test, y_train, y_test = train_test_split(combined_data, combined_labe
 
 
 # These are the commands that will be used to publish data. 
-# it will save the 'X_train' data in ../userspace/001/train_x
+# it will save the 'X_train' data in ../userspace/npjoodi/001/train_x
 # If the file path is not created, it will create it automatically
 orch.publish_data(X_train, 'npjoodi', '001', 'train', 'x' )
 orch.publish_data(y_train, 'npjoodi', '001', 'train', 'y' )
@@ -39,7 +40,7 @@ orch.train_network('npjoodi', '001', 'train')
 
 # Evaluate the model with the same logic as above. It will use the 
 # stored model in the userspace to do this.
-# simply returns te accuracy and loss right in one object for now
+# simply returns the accuracy and loss in one object for now
 orch.eval_network('npjoodi', '001', 'test')
 
 # predict with no ground truth

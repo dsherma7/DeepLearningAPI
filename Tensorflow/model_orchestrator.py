@@ -15,8 +15,7 @@ import user_space_utils as utils
 
 
 def publish_data(obj, username, job, data_set_type, data_type):
-    if (not utils.does_path_exist(username, job)):
-        us.create_user_space(username, job)
+    us.create_user_space(username, job)
     us.save_object(obj, username, job,data_set_type, data_type)
 
 
