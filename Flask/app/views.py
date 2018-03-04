@@ -1,47 +1,29 @@
 from flask import render_template, flash, jsonify, Flask, request, Response
-from app import app
+from app import app, csrf
 from json import dumps
 from .forms import * 
 from wtforms import SelectField, TextField, TextAreaField, validators, StringField, SubmitField
 
-activations = ["Sigmoid","ReLU","ExpLU"]
+activations = ["ReLU","ReLU6","CReLU","ExpLU","SoftPlus","SoftSign","Sigmoid","Tanh"]
+paddings = ["Valid","Same"]
+
 
 # Makes the substiution form based on SubForm
 @app.route('/', methods=['GET', 'POST'])
 def sub_form():
+
     form = MainForm()
+
     if form.validate_on_submit():
         flash("This message appears after clicking submit!")
+        print(request.form)
     return render_template('index.html',
                            title='Sub Form',
                            form=form)
 
 
-# Gets the necessary list of params needed for a given layer
-@app.route('/_get_params', methods=['GET'])
-def function():
-	layer_type = request.args.get('layer', 0, type=str)
-	input_size = request.args.get('size', 0, type=str)
-
-	if layer_type == 0:
-		# Returned when Get request fails
-		return ""
-
-	if layer_type == "Convolutional":
-		# Name field
-		row1 = {"Name":"Name","Fields":[{"Field":"StringField"}]}
-		# A List of activation functions to choose from (defined above)
-		row2 = {"Name":"Activation","Fields":[{"Field":"SelectField","Choices":activations}]}
-		# A textbox for each filter dimension
-		row3 = {"Name":"Filter","Fields":[{"Field":"FilterField","Size":int(input_size[0])}]}
-		return jsonify(params=[row1,row2,row3])
-
-	if layer_type == "Max Pooling":
-		# Name field
-		row1 = {"Name":"Name","Fields":[{"Field":"StringField"}]}
-		# A textbox for each filter dimension
-		row2 = {"Name":"Pool Size","Fields":[{"Field":"FilterField","Size":int(input_size[0])}]}
-		return jsonify(params=[row1,row2])
-
-
-	return ""
+@csrf.exempt
+@app.route('/submit_extra', methods=['POST'])
+def sub_extra():
+	print(request.get_json())
+	return {'Status':'200 OK'}

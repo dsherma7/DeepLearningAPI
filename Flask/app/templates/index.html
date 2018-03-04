@@ -4,7 +4,7 @@
 {% block content %}
 
     <div class="row">
-    	<h2>Test Web Form</h2>                
+    	<h2>Neural Net Builder</h2>                
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 <ul>
@@ -47,20 +47,26 @@
                 <td>{{ form.InputSize }}</td>
             </tr>
             <tr>
-                <th>Layer Type:</th>
+                <th>Input Shape:</th>
+                <td>{{ form.InputShape }}</td>
+            </tr>
+            <tr>
+                <th>Layers:</th>
                 <td id="layers">
-                    {{ form.LayerType }}
+
                 </td>
             </tr>
             <tr>
-                <th>Optimizer:</th>
-                <td>{{ form.Optimizer }}</td>
+                <th>Loss Function:</th>
+                <td>{{ form.LossFunct }}</td>
             </tr>
             <tr>
-                <th>Current Layers:</th>
-                <td>
-                    <ul id="current">
-                    </ul>
+                <th>Optimizer:</th>
+                <td id="opts">
+                    {{ form.Optimizer }}<br>
+                    {% for error in form.Optimizer.errors %}
+                        <small><span style="color: red;">[{{ error }}]</span></small>
+                    {% endfor %}
                 </td>
             </tr>
             <tr>
