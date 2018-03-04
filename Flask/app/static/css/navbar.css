@@ -1,0 +1,104 @@
+body{
+    /*background:url('http://www.wallpaperup.com/uploads/wallpapers/2012/10/21/20181/cad2441dd3252cf53f12154412286ba0.jpg');*/
+    background:url('../img/space-bg.jpg');
+    padding:50px;
+}
+
+.navbar-inverse {
+    background-color: #9b76c424;
+    border-color: #276bb9d6;
+    background: linear-gradient(#6b2d845e, #609dde78);
+}
+
+.container-fluid,
+.navbar-inverse .navbar-collapse, 
+.navbar-inverse .navbar-form {
+    border-color: #fff0;
+}
+
+.navbar-inverse .navbar-nav > li > a{
+    color: #bababa;
+}
+
+.navbar-inverse .navbar-nav > .active > a{
+    background-color: #06114f;
+    color: #87d9ff;
+    background: linear-gradient(#6b2d84ab, #609ddecc);
+}
+
+a.navbar-brand {
+    color: ;
+}
+
+#login-dp{
+    min-width: 250px;
+    padding: 14px 14px 0;
+    overflow:hidden;
+    background-color:rgba(255,255,255,.8);
+}
+#login-dp .help-block{
+    font-size:12px    
+}
+#login-dp .bottom{
+    background-color:rgba(255,255,255,.8);
+    border-top:1px solid #ddd;
+    clear:both;
+    padding:14px;
+}
+#login-dp .social-buttons{
+    margin:12px 0    
+}
+#login-dp .social-buttons a{
+    width: 49%;
+}
+#login-dp .form-group {
+    margin-bottom: 10px;
+}
+span.social {
+    padding-left: 10px;
+}
+
+.btn-fb{
+    color: #fff;
+    background-color:#3b5998;
+}
+.btn-fb:hover{
+    color: #fff;
+    background-color:#496ebc 
+}
+.btn-tw{
+    color: #fff;
+    background-color:#55acee;
+}
+.btn-tw:hover{
+    color: #fff;
+    background-color:#59b5fa;
+}
+.btn-google{
+    color: #fff;
+    background-color:#DD4B39;
+}
+.btn-google:hover{
+    color: #fff;
+    background-color:#CE2C17;
+}
+.btn-github{
+    color: #fff;
+    background-color:#444444;
+}
+.btn-github:hover{
+    color: #fff;
+    background-color:#222222;
+}
+
+
+@media(max-width:768px){
+    #login-dp{
+        background-color: inherit;
+        color: #fff;
+    }
+    #login-dp .bottom{
+        background-color: inherit;
+        border-top:0 none;
+    }
+}

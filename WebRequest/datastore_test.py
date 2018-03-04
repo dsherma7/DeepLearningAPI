@@ -1,6 +1,6 @@
 
 import datastore
-
+from datastore import *
 # necessary params needed from UI upon
 # submitting a new job. Note, this is 
 # not all the fields for each layer, but
@@ -8,27 +8,28 @@ import datastore
 # Also, the division between description/model
 # is arbitrary, but this could be helpful on the UI
 # side of things. 
-description = {"user":"dsherman",
-			   "job":helper.parse_JobId(2),
-			   "project":"for a test project",
-			   "status":"training"}
-model = {"input":"1D",
-		"num_classes":"5",
-		"optimizer":"Adadelta"}
-layer1 = {'type':'conv','filter':'2555','activtion':'ReLU'}
-layer2 = {'type':'drop','rate':'0.1','training':'0'}
-layer3 = {'type':'conv','filter':'3412','activtion':'ReLU'}
-layer4 = {'type':'dense','activtion':'ExpLU'}
+train = {"user":"dsherman",
+	     "project":"One more for testing purposes",
+	     "comments":"This is a note, and should be editable."
+	     "status":"built",
+	     "input":"1D",
+	     "num_classes":"52",
+	     'optimizer': {'type': 'gradient_descent'},
+	     'loss': {'type': 'soft_max_cross_entropy'},
+	     'learning_rate':0.001,
+	     'batch_size':100,
+	     'shuffle_batch':True,
+	     'training_steps': 1            
+        }
+
+layer1 = {'type':'conv','filter':2555,'activtion':'ReLU','padding': "same"}
+layer2 = {'type':'drop','rate':0.1,'training':0,'units':1024}
+layer3 = {'type':'conv','filter':3412,'activtion':'ReLU'}
+layer4 = {'type':'dense','activtion':'ExpLU','units':1024}
 layer5 = {'type':'dense','activtion':'ExpLU'}
 layer6 = {'type':'dense','activtion':'ExpLU'}
-params = {'description':description,
-		  'model':model,
-		  'layer1':layer1,
-		  'layer2':layer3,
-		  'layer3':layer4,
-		  'layer4':layer5,
-		  'layer5':layer2,
-		  'layer6':layer1,
-		  'layer7':layer6}
+layers = [layer1,layer2,layer3,layer2,layer4,layer6,layer1]
+params = {'train':train,'layers':layers}
+
 ##END Necessary params
 add_job(params)

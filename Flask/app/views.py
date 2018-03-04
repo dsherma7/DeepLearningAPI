@@ -1,8 +1,12 @@
 from flask import render_template, flash, jsonify, Flask, request, Response
 from app import app
-from json import dumps
+import json
 from .forms import * 
 from wtforms import SelectField, TextField, TextAreaField, validators, StringField, SubmitField
+from importlib.machinery import SourceFileLoader
+
+datastore = SourceFileLoader("datastore", "../WebRequest/datastore.py").load_module()
+
 
 activations = ["Sigmoid","ReLU","ExpLU"]
 
@@ -45,3 +49,51 @@ def function():
 
 
 	return ""
+
+
+
+@app.route('/navbar')
+def deleteme():
+	form = StatusForm()
+	return render_template('navbar.html',title='Job Status', form=form)
+
+@app.route('/_get_jobs',methods=['GET'])
+def _get_jobs():
+	user = request.args.get('user', 0, type=str)
+	jobs = datastore.get_job_stats(user)
+	return Response(json.dumps(jobs),  mimetype='application/json')
+
+@app.route('/_set_comment',methods=['GET','SET'])
+def _set_comment():
+	comment = request.args.get('comment',  0, type=str)
+	user = request.args.get('user', 0, type=str)
+	job = request.args.get('job',  0, type=str)	
+	datastore.set_comment(user,job,comment)
+	return jsonify(status="200")
+
+@app.route('/status',methods=['GET','POST'])
+def job_status():
+	form = StatusForm()
+	if form.validate_on_submit():
+		flash('Success!')
+	return render_template('status.html',title='Job Status',form=form)
+
+@app.route('/login',methods=['GET','POST'])
+def login():
+	form = LoginForm()
+	if form.validate_on_submit():
+		flash('Success!')
+	return render_template('login.html',title='Job Status',form=form)
+
+@app.route('/_login',methods=['GET','POST'])
+def _login():
+	print(request.args)
+	print('youve logged in!')
+	flash('something')
+	return(loggedIn())
+
+def loggedIn():
+	form = LoginForm()
+	if form.validate_on_submit():
+		flash('Success!')
+	return render_template('logged.html',title='Job Status',form=form)

@@ -14,9 +14,6 @@ Components:
     DateField: Date/Time Field
 '''
 
-
-
-
 class MainForm(FlaskForm):
     '''
     Generates Substitute form. Note: PlateType not displyed
@@ -34,3 +31,27 @@ class MainForm(FlaskForm):
     Name      = StringField('Name', validators=[DataRequired("Error msg if no input")])    
     Files     = FileField('Import',validators=[FileRequired(), FileAllowed(['csv'], 'Must be in .csv format.')])
     Date      = DateField('Date',validators=[validators.InputRequired()], format='%m/%d/%Y')
+
+
+class StatusForm(FlaskForm):
+    '''
+    Generates Substitute form. Note: PlateType not displyed
+    '''
+    # Note: For these choices elements, the pairs are ('Variable Name','What the User Sees')
+
+
+
+class LoginForm(FlaskForm):
+    '''
+    Generates Substitute form. Note: PlateType not displyed
+    '''
+    # Note: For these choices elements, the pairs are ('Variable Name','What the User Sees')    
+
+    
+class LoggedForm(FlaskForm):
+
+    def set(this,args):
+        this.Username.value = args['Username']
+        this.Password.value = args['Username']
+
+

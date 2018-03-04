@@ -100,6 +100,9 @@ ENV/
 # mypy
 .mypy_cache/
 
+# Ignore my jupyter notebooks
+*.ipynb
+
 # mac stuff 
 *.DS_Store
 

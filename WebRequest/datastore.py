@@ -1,53 +1,65 @@
 # Imports the Google Cloud client library
 from google.cloud import datastore
-import helper
+import numpy as np
+from time import gmtime, strftime
+from importlib.machinery import SourceFileLoader
+
+helper = SourceFileLoader("datastore", "../WebRequest/helper.py").load_module()
 
 # # Instantiates a client
 client = datastore.Client(project="tensorfloss")
 
 ## Helper functions for the functions needed for 
-## Python server and 
+## Python server and user interfaces
 def flatten(params):
 	new_params = {}
+	cnt = 1
 	for key in params:
 		if 'layer' in key:
-			new_params[key] = str(params[key])
+			for layer in params[key]:
+				new_params['layer'+str(cnt)] = str(layer)
+				cnt=cnt+1
 		else:
 			for task in params[key]:
 				new_params[task] = params[key][task]
 	return(new_params)	
 
 def expand(params):
-	new_params = {}
-	for key in params:
-		if 'layer' in key:
-			expanded = locals()
-			exec("var =" + params[key],globals(),expanded)
-			new_params[key] = {x:expanded['var'][x] for x in expanded['var']}
-		else:
-			new_params[key] = params[key]
-	return(new_params)
+	train = {}
+	layers = []
+	# Get the layers
+	for key in np.sort([x for x in params.keys() if 'layer' in x]):
+		expanded = locals()
+		exec("var =" + params[key],globals(),expanded)
+		layers.append({x:expanded['var'][x] for x in expanded['var']})
+	# Get the 
+	for key in params:			
+		if 'layer' not in key:
+			train[key] = params[key]
+	return({'train':train,'layers':layers})
 	
 def add_job(params):	
 	'''
-		Stores the values in params for a
-		given username/job as key=[username][job]
-		user: Username of new job, the primary key
-		job:  Job ID to reference within each column (2nd key)
-		params: A 2 layer dictionary of the values to add to 
-			    the new row. The keys in the first layer are 
-			    ignored, unless they are of the form layer<i>.			    
-			-project: Description of project
-			-status: Current status of job (built/trained)
-			-storage-loc: Location of weights on Python server		
+	Stores the values in params for a
+	given username/job as key=[username][job]
+	user: Username of new job, the primary key
+	job:  Job ID to reference within each column (2nd key)
+	params: A 2 layer dictionary of the values to add to 
+		    the new row. The keys in the first layer are 
+		    ignored, unless they are of the form layer<i>.			    
+		-project: Description of project
+		-status: Current status of job (built/trained)
+		-storage-loc: Location of weights on Python server		
 	'''			
-	params = flatten_params(params)
-	job = helper.parse_JobId(params['job'])
+	params = flatten(params)
 	user = params['user']
+	job = helper.parse_JobId(get_next_jobid(user))
 	task_key = client.key('jobs', user+job)
 	task = datastore.Entity(key=task_key)	
 	for key in params:
 		task[key] = params[key]
+	task['date'] = strftime("%d/%m/%y",gmtime())
+	task['job'] = job
 	client.put(task)
 
 def list_entities(kind):
@@ -72,18 +84,27 @@ def get_jobs_from_user(user):
 	jobs = 	[expand(x) for x in jobs]
 	return (jobs)
 
+def set_val(user,job,key,val):
+	job = helper.parse_JobId(job)
+	with client.transaction():
+		key = client.key('jobs', user+job)
+		task = client.get(key)
+		if not task:
+			raise ValueError('Job {} does not exist.'.format(user+job))
+		task[key] = val
+		client.put(task)
 
 # Information the UI would need to get 
 def get_next_jobid(user):
 	# Use this to get the next available job id for a user
 	all_jobs = get_jobs_from_user(user)
-	max_job = max(int(x['job'].replace('J','')) for x in all_jobs)
+	max_job = max(int(x['train']['job'].replace('J','')) for x in all_jobs)
 	return helper.parse_JobId(max_job+1)
 
 def get_job_stats(user):
 	# Gets the stats for each job of a given user
 	all_jobs = get_jobs_from_user(user)
-	all_jobs = [{x:each_job[x] for x in each_job if 'layer' not in x} for each_job in all_jobs]
+	all_jobs = [{x:each_job['train'][x] for x in each_job['train']} for each_job in all_jobs]
 	return (all_jobs)
 
 def add_user(user,params):
@@ -106,6 +127,9 @@ def delete_user(user):
 	key = client.key('users', user)
 	client.delete(key)	
 
+def set_comment(user,job,comment):
+	set_val(user,job,'comment',comment)	
+
 # For the python server to use to change the DB
 def get_architecture(user,job):
 	'''
@@ -121,24 +145,11 @@ def get_architecture(user,job):
 	return ({'train':description,'layers':layers})
 
 def change_status(user,job,status):
-	job = helper.parse_JobId(job)
-	with client.transaction():
-		key = client.key('jobs', user+job)
-		task = client.get(key)
-		if not task:
-			raise ValueError('Job {} does not exist.'.format(user+job))
-		task['status'] = status
-		client.put(task)
+	set_val(user,job,'status',status)	
 
 def set_storage_loc(user,job,path):
-	job = helper.parse_JobId(job)
-	with client.transaction():
-		key = client.key('jobs', user+job)
-		task = client.get(key)
-		if not task:
-			raise ValueError('Job {} does not exist.'.format(user+job))
-		task['storage-loc'] = path
-		client.put(task)
+	set_val(user,job,'storage-loc',path)	
 
-
+def set_progress(user,job,val):
+	set_val(user,job,'progress',val)
 
