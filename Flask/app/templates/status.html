@@ -2,17 +2,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<head>
-    <!-- JQuery / JQuery UI -->
-    <script type="text/javascript" src="static/js/jquery.min.js"></script>
-    <script type="text/javascript" src="static/js/jquery-ui.min.js"></script>    
-    <!-- Tabulator -->
-    <script type="text/javascript" src="static/tabulator/js/moment.min.js"></script>
-    <script type="text/javascript" src="static/tabulator/js/tabulator.min.js"></script>
-    <link href="static/tabulator/css/tabulator.min.css" rel="stylesheet">    
-    <!-- Navbar -->
-    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">    
-    <link href="static/css/navbar.css" rel="stylesheet">  
+<head>    
     <!-- Status Page -->
     <link href="static/css/status.css" rel="stylesheet">  
 </head>
@@ -48,7 +38,7 @@
               <div class="form-group">
                 <input type="text" class="form-control" placeholder="Search">
               </div>
-              <button type="submit" class="btn btn-default">Search</button>
+              <button type="submit" class="btn btn-search">Search</button>
             </form>
             </li>            
           </ul>
@@ -123,6 +113,31 @@
 {{ form.name }}
     	        
 <div id="example-table"></div>
+
+<form action="#" method="post" name="Sub" enctype=multipart/form-data class="invis">
+{{ form.csrf_token }}
+{{ form.name }}
+
+<table class="table toolbar"> 
+  <tr>
+    <th> Data: </th>
+    <td> {{ form.Files }} </td>
+    <th> Labels: </th>
+    <td> {{ form.Labels }} </td>
+    <th> Data Type: </th>
+    <td> {{ form.DataType }} </td>    
+    <td>  </td>
+    <td> <input  type="submit" name="submit" value="Import" onclick="submit_layers();"></button> </td>
+  </tr>
+</table>
+
+</form>
+
+
+
+
+
+
 <script src="static/js/status.js"></script>
 
 {% endblock %}

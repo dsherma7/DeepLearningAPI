@@ -1,13 +1,13 @@
-body {font-family: Arial, Helvetica, sans-serif;}
+/*body {font-family: Arial, Helvetica, sans-serif;}*/
 /*form {border: 3px solid #f1f1f1;}*/
 
-div.col-sm-8 {
+div.main-form {
   padding: 15px;
   background-color: #dbdbdbd1;
   background: linear-gradient(#d3cfcfde,#b9b9b9d1);  
 }
 
-div.row {
+div.btn-row {
     margin-left: 0;
     margin-right: 0;
 }

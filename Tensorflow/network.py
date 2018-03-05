@@ -5,15 +5,13 @@ import numpy as np
 import tensorflow as tf
 import random
 import math
-import user_space_utils as utils
+# import user_space_utils as utils
+from importlib.machinery import SourceFileLoader
+utils = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_utils.py").load_module()
+
 
 tf.logging.set_verbosity(tf.logging.INFO)
 USER_DATA_PATH = utils.USER_DATA_PATH
-
-
-
-
-
 
 class Network:
     def __init__(self,username,job,params):

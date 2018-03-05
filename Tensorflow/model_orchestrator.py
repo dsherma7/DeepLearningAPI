@@ -6,11 +6,14 @@ import numpy as np
 import sys
 sys.path.insert(0, '../WebRequest')
 import random
-from network import Network
+# from network import Network
 import pickle as pickle
-import user_space_handler as us
-import user_space_utils as utils
-
+# import user_space_handler as us
+# import user_space_utils as utils
+from importlib.machinery import SourceFileLoader
+network = SourceFileLoader("network", "../Tensorflow/network.py").load_module()
+utils   = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_utils.py").load_module()
+us      = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_handler.py").load_module()
 
 
 

@@ -1,0 +1,35 @@
+
+div.col-lg-12 {
+	padding-left: 0px;
+	padding-right: 0px;
+}
+
+form.invis,div.invis {
+	background-color: #ffffff00;
+}
+
+div.main {
+	background-color: #ffffff00;
+	background: linear-gradient(#dddddda1,#dbdbdbde,#c3bfbf);
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: #f9f9f9b8;
+}
+
+div.architecture {
+	background-color: #f9f9f9b8;
+	background: linear-gradient(#f9f9f9b8,#c9c9c9c2,#f9f9f9b8);
+}
+
+div.msg {
+	padding-left: 20px;
+} 
+
+h3.msg-good {
+	color: #88d8f0;
+}
+
+h3.msg-bad {
+	color: #c442fa;
+}

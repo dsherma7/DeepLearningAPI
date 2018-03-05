@@ -14,10 +14,11 @@ var chg_comment = function(cell){
 }
 
 $("#example-table").tabulator({
-    height:205, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+    height:400, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
     layout:"fitColumns", //fit columns to width of table (optional)
     movableColumns:true,
     resizableRows:true,
+    selectable:true,
     initialSort: [
     	{column:"job",dir:"asc"}
     ],

@@ -90,7 +90,20 @@ span.social {
     color: #fff;
     background-color:#222222;
 }
-
+.btn-search {
+    color: #333;
+    background-color: #aaa9a9;
+    border-color: #2cd1f8;
+    background: linear-gradient(#d5d5d5,#aaa9a9,#d1d1d1);
+    width: -webkit-fill-available;
+}
+.btn-search:hover {
+    color: #333;
+    background-color: #aaa9a9;
+    border-color: #2cd1f8;
+    background: linear-gradient(#d5d5d5,#aaa9a9,#d1d1d1);
+    width: -webkit-fill-available;
+}
 
 @media(max-width:768px){
     #login-dp{

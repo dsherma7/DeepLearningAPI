@@ -2,8 +2,11 @@ import pickle as pickle
 import datastore as ds
 import tensorflow as tf
 import os
-from network import Network
-import user_space_utils as utils
+# from network import Network
+# import user_space_utils as utils
+from importlib.machinery import SourceFileLoader
+Network = SourceFileLoader("network", "../Tensorflow/network.py").load_module()
+utils   = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_utils.py").load_module()
 
 USER_DATA_PATH = utils.USER_DATA_PATH
 

@@ -109,3 +109,6 @@ ENV/
 # ignore userspace files
 user_space/*
 !README
+
+# Ignore npm helper files
+package-lock.json

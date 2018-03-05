@@ -4,3 +4,22 @@
 	background-color: #dbdbdbd1;
   	background: linear-gradient(#595757b3,#b9b9b961);
 }
+
+table.toolbar {
+
+}
+
+.toolbar tr {
+	background-color: #e6e6e6a3;
+    background: linear-gradient(#bfbdbd,#e6e6e6db,#a4a1a1d1);
+}
+
+.toolbar td {
+	color: ;
+}
+
+.toolbar select,
+.toolbar input {
+	color: ;
+}
+
