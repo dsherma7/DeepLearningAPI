@@ -1,3 +1,5 @@
+var login = (localStorage.username != undefined ? localStorage.username : "Login ")
+d3.select("#dd-login").text(login)
 
 // Set default values using localStorage
 function SetObjects(){             

@@ -1,3 +1,6 @@
+var login = (localStorage.username != undefined ? localStorage.username : "Login ")
+d3.select("#dd-login").text(login)
+
 var layers = [
   new InputLayer(name="Input"),
   // new ConvLayer(name="Conv-1"),

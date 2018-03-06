@@ -5,10 +5,12 @@ from importlib.machinery import SourceFileLoader
 from app import app, csrf
 import pickle as pickle
 from .forms import * 
+import pandas as pd
 import numpy as np
 import json
+import io
 # Tensorflow Server & Datastore Client
-orch      = SourceFileLoader("model_orchestrator", "../Tensorflow/model_orchestrator.py").load_module()
+orch 	  = SourceFileLoader("model_orchestrator", "../Tensorflow/model_orchestrator.py").load_module()
 datastore = SourceFileLoader("datastore", "../WebRequest/datastore.py").load_module()
 
 
@@ -84,26 +86,33 @@ def _set_comment():
 def job_status():
 	form = StatusForm()
 	if form.validate_on_submit():
-		flash('Success!')
-		data  = form.Files.data
-		lbls  = form.Labels.data
-		dtype = form.DataType.data
-		
-		print(divider)
-		print(data)
-		print(lbls)
-		print(dtype)
-		print(divider)
-		if false:
+		user = form.username.data
+		if user != "":
+			flash('Success!')
+			data  = request.files['Files'].read()
+			lbls  = request.files['Labels'].read()
+			dtype = form.DataType.data
+			selected = json.loads(form.selected.data)
+
+			print(divider)
+			print("username: " + user)
+			print(data)
+			print(lbls)
+			print(dtype)
+			print(str(selected))
+			print(divider)
+
 			if dtype == "all":
 				X_train, X_test, y_train, y_test = train_test_split(data, lbls, test_size=0.33, random_state=42)	
-				orch.publish_data(X_train, 'npjoodi', '001', 'train', 'x' )
-				orch.publish_data(y_train, 'npjoodi', '001', 'train', 'y' )
-				orch.publish_data(X_test, 'npjoodi', '001', 'test', 'x' )
-				orch.publish_data(y_test, 'npjoodi', '001', 'test', 'y' )
+				orch.publish_data(X_train, user, selected['job'], 'train', 'x' )
+				orch.publish_data(y_train, user, selected['job'], 'train', 'y' )
+				orch.publish_data(X_test, user, selected['job'], 'test', 'x' )
+				orch.publish_data(y_test, user, selected['job'], 'test', 'y' )
 			else:
-				orch.publish_data(data, 'npjoodi', '001', dtype, 'x' )
-				orch.publish_data(lbls, 'npjoodi', '001', dtype, 'y' )
+				orch.publish_data(data, user, selected['job'], dtype, 'x' )
+				orch.publish_data(lbls, user, selected['job'], dtype, 'y' )
+		else:
+			flash("Please Login First!")
 
 	return render_template('status.html',title='Job Status',form=form)
 
@@ -121,6 +130,31 @@ def _login():
 	flash('something')
 	return True
 
+@app.route('/signup',methods=['GET','POST'])
+def signup():
+	form = SignUpForm()
+	if form.validate_on_submit():
+		flash('Success!')
+	return render_template('signup.html',title='Job Status',form=form)
+
+
+@app.route('/_get_users',methods=['GET'])
+def get_users():
+	users = datastore.list_entities('users')
+	users = [x['username'] for x in users]
+	return jsonify(users=users)
+
+
+@app.route('/_add_user',methods=['GET','POST'])
+def add_user():
+	user = request.args.get('user', 0, type=str)		
+	if datastore.username_exists(user):
+		return jsonify(out = {'status':600,"msg":"Username Exists"})
+	else:
+		exec("params =" + str(request.args.get('params', 0, type=str)),globals())	
+		datastore.add_user(user,params)
+		return jsonify(out = {'status':200,"msg":"OK"})
+	return jsonify(out = {'status':400,"msg":"Unknown Error"})
 
 
 

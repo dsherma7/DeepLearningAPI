@@ -1,22 +1,34 @@
 <!-- extend base layout -->
 {% extends "base.html" %}
-
 {% block content %}
-<head>    
-    <!-- Status Page -->
-    <link href="static/css/status.css" rel="stylesheet">  
-</head>
-
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">        
+<!-- Login Form -->
+<link href=static/css/login.css rel="stylesheet">
 <script type="text/javascript">
-  $(document).ready(function(){
-    user = localStorage.username;
-    client.get('/_get_jobs?user='+user, function(response) {
-      // do something with response
-      $("#example-table").tabulator("setData", JSON.parse(response));
+    var users = [];
+    $(document).ready(function () {
+         client.get('/_get_users', function(response) {
+            response = JSON.parse(response).users;
+            response.forEach(d => users.push(d));
+            users = Array.from(new Set(users));
+        });
     });
-    $("#username").val(localStorage.username)    
-  });  
 </script>
+
+
+</head>
+<div class="row">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <h4><font color='blue'>{{ message }} </font></h4>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+</div> <!-- Header -->
 
 <nav class="navbar navbar-default navbar-inverse" role="navigation">
   <div class="container-fluid">
@@ -34,9 +46,9 @@
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-        <li><a href="/login">Login</a></li>
+        <li class="active"><a href="/login">Login</a></li>
         <li><a href="/">Build New</a></li>
-        <li class="active"><a href="/status">Job Status</a></li>
+        <li><a href="/status">Job Status</a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Job Templates <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
@@ -73,11 +85,11 @@
                                  <form class="form" role="form" method="post" action="#" accept-charset="UTF-8" id="login-nav" style="padding: 4px;">
                                         <div class="form-group">
                                              <label class="sr-only" for="nav-uname">Email address</label>
-                                             <input type="text" class="form-control" id="nav-uname" placeholder="Enter Username" required>
+                                             <input type="text" class="form-control" id="uname" placeholder="Enter Username" required>
                                         </div>
                                         <div class="form-group">
                                              <label class="sr-only" for="nav-psw">Password</label>
-                                             <input type="password" class="form-control" id="nav-psw" placeholder="Password" required>
+                                             <input type="password" class="form-control" id="psw" placeholder="Password" required>
                                              <div class="help-block text-right"><a href="">Forget your password ?</a></div>
                                         </div>
                                         <div class="form-group">
@@ -102,46 +114,38 @@
   </div><!-- /.container-fluid -->
 </nav>
 
-<div class="row">
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <h4><font color='blue'>{{ message }} </font></h4>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-	</div> <!-- Header -->
-      
-<div id="example-table"></div>
-<form action="#" method="post" name="Sub" enctype=multipart/form-data class="invis">
-{{ form.csrf_token }}
-{{ form.name }}
-{{ form.username }}
-{{ form.selected }}
+<form action="#">
+    {{ form.csrf_token }} 
+    <div class="imgcontainer">
+        <!-- <img src="img_avatar2.png" alt="Avatar" class="avatar"> -->
+    </div>  
+    <div class="container">
+    <div class="col-sm-2"></div>
+    <div class="col-sm-8 main-form">
+        <label for="uname"><b>Username</b></label>    
+        <input type="text" placeholder="Enter Username" name="uname" id="uname" required>
+        <p for="uname" class="error" id="uname-err"></p>    
 
-<table class="table toolbar"> 
-  <tr>
-    <th> Data: <br>
-     {{ form.Files }} </th>
-    <th> Labels: <br>
-     {{ form.Labels }} </th>
-    <th> Data Type: <br>
-    {{ form.DataType }} </td>    
-    <td>  </td>
-    <td style="vertical-align: middle;"> <input  type="submit" name="submit" value="Import"></button> </td>
-  </tr>
-</table>
+        <label for="email"><b>Email</b></label>    
+        <input type="text" placeholder="email@domain.com" name="email" id="email" required>
+        
+        <label for="psw"><b>Password</b></label>
+        <input type="password" placeholder="Enter Password" name="psw" id="psw" required>
+        
+        <label for="cpsw"><b>Confirm Password</b></label>
+        <input type="password" placeholder="Confirm Password" name="cpsw" id="cpsw" required>        
+        <p for="cpsw" class="error" id="cpsw-err"></p>    
 
+        <button type="submit" onclick="SetStorage(d3.select('#remember').property('checked'));">Login</button>
+        <label><input type="checkbox" checked="checked" id="remember"> Remember me </label>
+        
+        <div class="row btn-row">
+        <button type="button" class="cancelbtn" onclick="End();" href="/status">Cancel</button>
+        <span class="psw">Have an account? <a href="/login">Login</a></span>
+        </div>
+    </div>
+    <div class="col-sm-2"></div>
+    </div>   
 </form>
-
-
-
-
-
-
-<script src="static/js/status.js"></script>
-
+<script type="text/javascript" src="static/js/signup.js"></script>
 {% endblock %}
-

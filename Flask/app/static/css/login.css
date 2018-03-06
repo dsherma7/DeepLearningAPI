@@ -12,6 +12,13 @@ div.btn-row {
     margin-right: 0;
 }
 
+p.error {
+    display: none;
+    color: #a538b2;
+    font: italic 12px arial;
+}
+
+
 input[type=text], input[type=password] {
     width: 100%;
     padding: 12px 20px;

@@ -1,3 +1,13 @@
+// Re-build table on username change
+$("#btn-login").bind("click",function(){
+    SetStorage(d3.select('#nav-remember').property('checked'));
+    user = localStorage.username;
+    client.get('/_get_jobs?user='+user, function(response) {
+        // do something with response
+        $("#example-table").tabulator("setData", JSON.parse(response));
+    });
+});
+
 // create Tabulator on DOM element with id "example-table"
 var cellAlert = function(e,cell){
 	cell_val = cell.getData()[e.currentTarget.getAttribute('tabulator-field')]
@@ -18,7 +28,8 @@ $("#example-table").tabulator({
     layout:"fitColumns", //fit columns to width of table (optional)
     movableColumns:true,
     resizableRows:true,
-    selectable:true,
+    selectable:5,
+    selectableRollingSelection:false, // disable rolling selection
     initialSort: [
     	{column:"job",dir:"asc"}
     ],
@@ -29,7 +40,11 @@ $("#example-table").tabulator({
         {title:"Progress", field:"progress", align:"left", formatter:"progress",formatterParams:{color:"#6b3399"},width:170},
         {title:"Status", field:"status", align:"center", width:80, cellClick:function(e, cell){cellAlert(e,cell)}},
         {title:"Comment", field:"comment", editor:true, cellEdited:function(e,cell){chg_comment(e,cell)}}
-    ]
+    ],
+    rowSelected:function(row){
+        //row - row component for the selected row
+        $("#selected").val( JSON.stringify(row.getData()) )
+    }
 });
 
 var HttpClient = function() {
@@ -44,26 +59,27 @@ var HttpClient = function() {
         anHttpRequest.send( null );
     }
 }
-
-
 var client = new HttpClient();
-client.get('/_get_jobs?user=dsherman', function(response) {
-    // do something with response
-    $("#example-table").tabulator("setData", JSON.parse(response));
-});
+
+
+
+// client.get('/_get_jobs?user=dsherman', function(response) {
+//     // do something with response
+//     $("#example-table").tabulator("setData", JSON.parse(response));
+// });
 
 //  Allows the user to see other users (just for debugging)
-$(function() {
-  $('select#users').bind('change', function() {    
-    var user = $("select#users option:selected").text();
+// $(function() {
+//   $('select#users').bind('change', function() {    
+//     var user = $("select#users option:selected").text();
 
-    client.get('/_get_jobs?user='+user, function(response) {
-    	// do something with response
-    	$("#example-table").tabulator("setData", JSON.parse(response));
-	});
-
-  });
-}); 
+//   $(document).bind("load",function(){
+//     client.get('/_get_jobs?user='+user, function(response) {
+//     	// do something with response
+//     	$("#example-table").tabulator("setData", JSON.parse(response));
+// 	});
+//   });
+// }); 
 
 
 

@@ -33,3 +33,17 @@ params = {'train':train,'layers':layers}
 
 ##END Necessary params
 add_job(params)
+
+
+#### ADD User #####
+user = {"username":"dsherman",
+		"password":"password1",
+		"email":"desherman@ucdavis.edu"}
+# Check user doesn't exist
+if not username_exists(user['username']):
+	add_user(user['username'],user)
+
+
+
+
+

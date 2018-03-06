@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileRequired, FileAllowed
-from wtforms import StringField, BooleanField, DecimalField, SelectField, RadioField, DateField, SubmitField, FieldList, FormField, validators
+from wtforms import StringField, BooleanField, DecimalField, SelectField, RadioField, DateField, SubmitField, FieldList, FormField, HiddenField, validators
 from wtforms.validators import DataRequired, required, NoneOf
 from wtforms.fields.html5 import IntegerField
 
@@ -40,14 +40,22 @@ class MainForm(FlaskForm):
 
 class StatusForm(FlaskForm):
     '''
-    Generates the Job Status page. No WTF elements used 
+    Generates the Job Status page
     '''
     Sizes    = [('all','All'),('train','Train'),('test','Test'),('cv','CV')]
     Files    = FileField('Import',validators=[FileRequired(), FileAllowed(['csv','zip','tar','png','xlsx','xls'], 'Invalid data format!')])
     Labels   = FileField('Labels',validators=[FileRequired(), FileAllowed(['csv','zip','tar','png','xlsx','xls'], 'Invalid data format!')])
     DataType = SelectField('DataType', choices=Sizes, default="All")
+    username = HiddenField("username")
+    selected = HiddenField("selected")
 
 class LoginForm(FlaskForm):
     '''
-    Generates the Login Form. Also no WTF elements are used
+    Generates the Login Form. No WTF elements are used
     '''    
+
+class SignUpForm(FlaskForm):
+    '''
+    Generates the Signup Form. Also, no WTF elements are used
+    '''    
+

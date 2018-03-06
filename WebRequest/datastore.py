@@ -112,7 +112,6 @@ def add_user(user,params):
 		Addes a user entity with the 
 		provided parameters.
 	'''
-	job = helper.parse_JobId(job)
 	task_key = client.key('users', user)
 	task = datastore.Entity(key=task_key)
 	for key in params:
@@ -129,6 +128,12 @@ def delete_user(user):
 
 def set_comment(user,job,comment):
 	set_val(user,job,'comment',comment)	
+
+def username_exists(user):
+	users = list_entities('users')
+	if len([x for x in users if x['username']==user]):
+		return (True)
+	return (False)
 
 # For the python server to use to change the DB
 def get_architecture(user,job):
