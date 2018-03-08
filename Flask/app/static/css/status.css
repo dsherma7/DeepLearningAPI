@@ -5,21 +5,39 @@
   	background: linear-gradient(#595757b3,#b9b9b961);
 }
 
-table.toolbar {
+/*
+	Toolbar
+*/
 
+div.toolbar {
+	padding: 0;
+	min-height: 25px;
 }
 
-.toolbar tr {
-	background-color: #e6e6e6a3;
-    background: linear-gradient(#bfbdbd,#e6e6e6db,#a4a1a1d1);
+div.toolbar i{
+	cursor: pointer;
 }
 
-.toolbar td {
-	color: ;
+div.toolbar .col-md-2,
+div.toolbar .col-md-3,
+div.toolbar .col-md-4 {
+	padding: 0;
+	text-align: center;
 }
 
-.toolbar select,
-.toolbar input {
-	color: ;
+span.toolbar {
+	font-size: 13px;
+	padding-right: 5px;
+}
+
+.toolbar input, button, select, textarea {
+	font-size: 12px;    
+    display: inline;
+    border-radius: 5px;
+}
+
+
+.toolbar b.function-type {
+	font: 15px bold italic courier;
 }
 

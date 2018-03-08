@@ -28,8 +28,9 @@ $("#example-table").tabulator({
     layout:"fitColumns", //fit columns to width of table (optional)
     movableColumns:true,
     resizableRows:true,
-    selectable:5,
-    selectableRollingSelection:false, // disable rolling selection
+    selectable:1,
+    placeholder:"No Jobs For User "+localStorage.username,    
+    tooltip: true,
     initialSort: [
     	{column:"job",dir:"asc"}
     ],
@@ -39,13 +40,14 @@ $("#example-table").tabulator({
         {title:"Submit Date",field:"date", sorter:"date", align:"center",width:160},
         {title:"Progress", field:"progress", align:"left", formatter:"progress",formatterParams:{color:"#6b3399"},width:170},
         {title:"Status", field:"status", align:"center", width:80, cellClick:function(e, cell){cellAlert(e,cell)}},
-        {title:"Comment", field:"comment", editor:true, cellEdited:function(e,cell){chg_comment(e,cell)}}
+        {title:"Comment", field:"comment", editor:true, cellEdited:function(e,cell){chg_comment(e,cell)}}        
     ],
     rowSelected:function(row){
         //row - row component for the selected row
         $("#selected").val( JSON.stringify(row.getData()) )
-    }
+    }    
 });
+
 
 var HttpClient = function() {
     this.get = function(aUrl, aCallback) {

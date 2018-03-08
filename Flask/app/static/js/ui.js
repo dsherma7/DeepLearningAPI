@@ -7,7 +7,7 @@ var layers = [
   // new OutputLayer(name="Output")
 ];
 
-var optimizer;
+var optimizer = newOptimizer('grad');
 if (localStorage.optimizer != undefined)
     var optimizer = JSON.parse(localStorage.optimizer);
 
@@ -46,10 +46,9 @@ function parse_params(obj,param,value) {
         the exact components needed.
      */
     obj.append("td").text(param.Name);
-
     // Could add multiple elements per row
     param.Fields.forEach(function(field){
-      
+
       switch(field.Field) {
         case "StringField":
           obj.append("td")
@@ -63,16 +62,19 @@ function parse_params(obj,param,value) {
           break; 
 
         case "FilterField":
-          var row = 
-          obj.append("td")
-          for (var i=0; i<field.Size; i++){
+          var size = +$("#InputSize").val().slice(0,1);
+          var row = obj.append("td")
+          for (var i=0; i<size; i++){
              row.append("input")
                 .attr("type","text")
-                .style("width","25px")
-                .on('change', function(d) {
-                  value[param.Var] = this.value;
+                .style("width",1/size*180+"px")
+                .attr("placeholder",field.Placeholder)
+                .attr("value",field.Value[i])
+                .attr('idx',i)
+                .on('change', function(d,j=i) {
+                  value[param.Var][+this.getAttribute('idx')] = this.value;
                 });
-             if (i+1 < field.Size)
+             if (i+1 < size)
               row.append("text").text("x");
            }
           break; 
@@ -146,7 +148,7 @@ function build_list() {
         .text(function(d){return d;});
     select.on('change', function(d=layer) {
       var index = layers.findIndex(function(f) {return f==layer;});
-      layers[index] = newLayer(this.options[this.selectedIndex].value);
+      layers[index] = newLayer(this.options[this.selectedIndex].value,+$("#InputSize").val().slice(0,1));
       build_list();
     });
 
@@ -181,7 +183,7 @@ function build_list() {
 
 clear_layer = function(layer) {  
   var index = layers.findIndex(function(f) {return f==layer;});
-  layers[index] = newLayer(layer.type);
+  layers[index] = newLayer(layer.type,+$("#InputSize").val().slice(0,1));
   localStorage.removeItem("all_layers");
   localStorage.removeItem("optimizer");  
   build_list();
@@ -189,56 +191,18 @@ clear_layer = function(layer) {
 
 add_layer = function(layer) {
   if (validate(layer)){
-    var  new_layer = newLayer(layer.type,layer);
+    var  new_layer = newLayer(layer.type,+$("#InputSize").val().slice(0,1),layer);
     new_layer['layer'] = all_layers.length+1;
     delete new_layer.Fields;
     all_layers.push(new_layer);
     set_layers('#network-arch',all_layers);
     var index = layers.findIndex(function(f) {return f==layer;});
-    layers[index] = newLayer(layer.type);
+    layers[index] = newLayer(layer.type,+$("#InputSize").val().slice(0,1));
     build_list();
   }else{
-
+    d3.select('td#layers').select('table')
+      .append('tr').append('td').append('td')
+      .append("text").classed("txt-err",true)
+      .text("Error, check values and try again!")
   }
-}
-
-
-if (false){
-
-  $(function() {
-    $('select#LayerType').bind('change', function() {
-
-      // Delete the previous components
-      d3.select("td#layers").select("table").remove();
-      d3.select("td#layers").select("input").remove();
-
-      // Calls any flask function preceded by @app.route('/_get_params')
-      $.getJSON('/_get_params', {
-        // The inputs to the Python function
-        layer: $("select#LayerType option:selected").text(),
-        size:  $("select#InputSize option:selected").text()
-      }, function(params) {
-          // params is the output from the python function      
-          var tbl = d3.select("td#layers")
-                      .append("p")
-                      .append("table")
-          params["params"].forEach(function(param){
-            parse_params(tbl.append("tr"),param);
-          });
-
-          // Add "Add Layers" button
-          d3.select("td#layers")
-            .append("input")
-            .attr("type","button")
-            .attr("value","Add Layer")
-            .on("click",function(){
-              var layer_type =  $("select#LayerType option:selected").text();
-              add_layer(layer_type);
-            })
-
-      });    
-      // If failed
-      return false;
-    });
-  }); 
 }

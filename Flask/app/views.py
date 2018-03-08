@@ -32,7 +32,7 @@ def build_network():
 	if form.validate_on_submit():
 		flash("This message appears after clicking submit!")
 		print(divider + "here" + divider)		
-	return render_template('index.html',title='Sub Form',form=form)
+	return render_template('index.html',title='Build a New Network',form=form)
 
 # @csrf.exempt
 @app.route('/_submit_layers', methods=['GET','POST'])
@@ -48,10 +48,15 @@ def submit_layers():
 	loss  = request.args.get('loss', 0, type=str)
 	user  = request.args.get('user', 0, type=str)
 	shape = request.args.get('shape',0, type=str)
+	batchsz = request.args.get('batchsz',0, type=str)
+	shuffle = request.args.get('shuffle',0, type=str)
+	steps   = request.args.get('steps',0, type=str)
 	
 	train = {"user":user,"project":name,"date":date,
-			 "size":size,"loss":loss,"shape":shape,
-			 "status":"designed"}
+			 "input_size":size,"loss":loss,"shape":shape,
+			 "batch_size":batchsz,"shuffle_batch":shuffle,
+			 "training_steps":steps,"status":"designed",
+			 "optimizer":optimizer}
 
 	params = {'train':train,'layers':layers}
 	
@@ -65,6 +70,8 @@ def submit_layers():
 	
 	datastore.add_job(params);
 	
+	orch.create_network(user, job)
+
 	# return Response(json.dumps(layers),  mimetype='application/json')
 	return jsonify(out = {'status':200,"msg":"OK",'job':job})
 
@@ -89,18 +96,35 @@ def job_status():
 		user = form.username.data
 		if user != "":
 			flash('Success!')
-			data  = request.files['Files'].read()
-			lbls  = request.files['Labels'].read()
+			# data  = request.files['Files'].read()
+			# lbls  = request.files['Labels'].read()
+			f1 = form.Files.data
+			l1 = form.Labels.data
+			f2 = request.files['Files']
+			l2 = request.files['Labels']
+			data = pd.read_csv(f1)
+			lbls = pd.read_csv(l1)		
+			data2 = np.array(f2.read())	
+			lbls2 = np.array(l2.read())
 			dtype = form.DataType.data
 			selected = json.loads(form.selected.data)
 
 			print(divider)
 			print("username: " + user)
-			print(data)
-			print(lbls)
+			print(type(f1))
+			print(type(f2))
+			print(type(l1))
+			print(type(l2))
+			print(type(data))
+			print(type(lbls))
+			print(type(data2))
+			print(type(lbls2))
+			print(data.shape,lbls.shape,data2.shape,lbls2.shape)
 			print(dtype)
 			print(str(selected))
 			print(divider)
+
+			[data,lbls] = format_data(data,lbls)
 
 			if dtype == "all":
 				X_train, X_test, y_train, y_test = train_test_split(data, lbls, test_size=0.33, random_state=42)	
@@ -116,12 +140,25 @@ def job_status():
 
 	return render_template('status.html',title='Job Status',form=form)
 
+
+def format_data(X,y):
+	if True: # Change this to check for PIC type images
+		return np.array(X,dtype=float),np.array(y,dtype=float)
+
+@app.route('/home',methods=['GET','POST'])
+def home():
+	form = HomeForm()
+	if form.validate_on_submit():
+		flash('Success!')
+	return render_template('home.html',title='Deep Learning API',form=form)
+
+
 @app.route('/login',methods=['GET','POST'])
 def login():
 	form = LoginForm()
 	if form.validate_on_submit():
 		flash('Success!')
-	return render_template('login.html',title='Job Status',form=form)
+	return render_template('login.html',title='Login',form=form)
 
 @app.route('/_login',methods=['GET','POST'])
 def _login():
@@ -135,7 +172,7 @@ def signup():
 	form = SignUpForm()
 	if form.validate_on_submit():
 		flash('Success!')
-	return render_template('signup.html',title='Job Status',form=form)
+	return render_template('signup.html',title='Sign Up',form=form)
 
 
 @app.route('/_get_users',methods=['GET'])
@@ -157,32 +194,3 @@ def add_user():
 	return jsonify(out = {'status':400,"msg":"Unknown Error"})
 
 
-
-# Gets the necessary list of params needed for a given layer
-# @app.route('/_get_params', methods=['GET'])
-# def function(): 
-# 	layer_type = request.args.get('layer', 0, type=str)
-# 	input_size = request.args.get('size', 0, type=str)
-
-# 	if layer_type == 0:
-# 		# Returned when Get request fails
-# 		return ""
-
-# 	if layer_type == "Convolutional":
-# 		# Name field
-# 		row1 = {"Name":"Name","Fields":[{"Field":"StringField"}]}
-# 		# A List of activation functions to choose from (defined above)
-# 		row2 = {"Name":"Activation","Fields":[{"Field":"SelectField","Choices":activations}]}
-# 		# A textbox for each filter dimension
-# 		row3 = {"Name":"Filter","Fields":[{"Field":"FilterField","Size":int(input_size[0])}]}
-# 		return jsonify(params=[row1,row2,row3])
-
-# 	if layer_type == "Max Pooling":
-# 		# Name field
-# 		row1 = {"Name":"Name","Fields":[{"Field":"StringField"}]}
-# 		# A textbox for each filter dimension
-# 		row2 = {"Name":"Pool Size","Fields":[{"Field":"FilterField","Size":int(input_size[0])}]}
-# 		return jsonify(params=[row1,row2])
-
-
-# 	return ""

@@ -11,6 +11,22 @@ client = datastore.Client(project="tensorfloss")
 
 ## Helper functions for the functions needed for 
 ## Python server and user interfaces
+def format(val):
+	if type(val) == list:
+		return [format(x) for x in val]
+	if type(val) == dict:
+		return {x:format(val[x]) for x in val}
+
+	try:
+		float(val)
+	except ValueError:
+		return str(val)
+	try: 
+		int(val)
+	except ValueError:		
+		return float(val)
+	return int(val)
+	
 def flatten(params):
 	new_params = {}
 	cnt = 1
@@ -31,7 +47,7 @@ def expand(params):
 	for key in np.sort([x for x in params.keys() if 'layer' in x]):
 		expanded = locals()
 		exec("var =" + params[key],globals(),expanded)
-		layers.append({x:expanded['var'][x] for x in expanded['var']})
+		layers.append({x:format(expanded['var'][x]) for x in expanded['var']})
 	# Get the 
 	for key in params:			
 		if 'layer' not in key:
@@ -58,9 +74,9 @@ def add_job(params):
 	task = datastore.Entity(key=task_key)	
 	for key in params:
 		task[key] = params[key]
-	task['date'] = strftime("%d/%m/%y",gmtime())
+	task['date'] = strftime("%m/%d/%y",gmtime())
 	task['job'] = job
-	client.put(task)
+	client.put(task)	
 
 def list_entities(kind):
 	# returns all entities of a given kind use kind=jobs 
@@ -87,8 +103,8 @@ def get_jobs_from_user(user):
 def set_val(user,job,key,val):
 	job = helper.parse_JobId(job)
 	with client.transaction():
-		key = client.key('jobs', user+job)
-		task = client.get(key)
+		Key = client.key('jobs', user+job)
+		task = client.get(Key)
 		if not task:
 			raise ValueError('Job {} does not exist.'.format(user+job))
 		task[key] = val
@@ -145,6 +161,7 @@ def get_architecture(user,job):
 		is a list of params for each layer.
 	'''
 	job = get_job(user,job)
+	return job
 	description = {x:job[x] for x in job if 'layer' not in x}
 	layers = [job[x] for x in job if 'layer' in x]
 	return ({'train':description,'layers':layers})

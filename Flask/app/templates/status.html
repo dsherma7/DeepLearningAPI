@@ -121,18 +121,23 @@
 {{ form.username }}
 {{ form.selected }}
 
-<table class="table toolbar"> 
-  <tr>
-    <th> Data: <br>
-     {{ form.Files }} </th>
-    <th> Labels: <br>
-     {{ form.Labels }} </th>
-    <th> Data Type: <br>
-    {{ form.DataType }} </td>    
-    <td>  </td>
-    <td style="vertical-align: middle;"> <input  type="submit" name="submit" value="Import"></button> </td>
-  </tr>
-</table>
+<div class="well toolbar" id="train-toolbar">
+    <div class="col-md-2">
+        <b class="function"> Train </b>
+    </div>
+    <div class="col-md-3">
+       <i class="fa fa-database" id="tool-data"><span class="toolbar">Data</span>{{ form.Files }}</i>       
+    </div>    
+    <div class="col-md-3"> 
+      <i class="fa fa-tag" id="tool-labels"><span class="toolbar">Labels</span>{{ form.Labels }}</i>
+    </div>
+    <div class="col-md-2">
+       {{ form.DataType }}
+    </div>        
+    <div class="col-md-2">
+      <input  type="submit" name="submit" value="Import">
+    </div>        
+</div>
 
 </form>
 

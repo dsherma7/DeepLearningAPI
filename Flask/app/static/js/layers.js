@@ -2,23 +2,53 @@ var all_layers = [];
 if (localStorage.all_layers != undefined)
     var all_layers = JSON.parse(localStorage.all_layers);
  
+$("#expand-advanced").bind("click",function(){    
+    var display = d3.select("table.expand").style('display')
+    d3.select("table.expand").style('display',(display == "none" ? "table": "none"));
+    d3.select('#expand-advanced').style('display','none');
+    d3.select('#collapse-advanced').style('display','table');
+});
+$("#collapse-advanced").bind("click",function(){
+    var display = d3.select("table.expand").style('display')
+    d3.select("table.expand").style('display',(display == "none" ? "table": "none"));
+    d3.select('#expand-advanced').style('display','table');
+    d3.select('#collapse-advanced').style('display','none');
+});
+
 $("#network-arch").tabulator({
-    height:350, 
-    layout:"fitColumns", //fit columns to width of table (optional)
+    height:270, 
+    layout:"fitColumns", 
     movableColumns:false,
     movableRows:true,
     resizableRows:true,
+    selectable:1,
+    placeholder:"Add Layers",
     initialSort: [
         {column:"layer",dir:"asc"}
     ],
     columns:[ //Define Table Columns
-        {title:"", field:"layer", align:"center", width:5},
-        {title:"Name", field:"name", align:"left"},
-        {title:"Type",field:"type", align:"center"}
+        {title:"", field:"layer", align:"center", sorter:"number", width:5},
+        {title:"Name", field:"name", align:"left",width:74, editor:true, cellEdited:function(e,cell){edit_layer(e,cell)} },
+        {title:"Type",field:"type", align:"left",width:80},
+        {title:"Comments",field:"comments", align:"left",editor:true, cellEdited:function(e,cell){edit_layer(e,cell)} }
         // {title:"Parameters", field:"parmeters", align:"left"}
-    ]
+    ],
+    rowMoved:function(row){
+        //row - row component
+        var data = $("#network-arch").tabulator("getData");
+        var new_layers = [];
+        data.forEach(d => new_layers.push(d));
+        var cnt=1; new_layers.forEach(d => d.layer = cnt++);
+        all_layers = new_layers;
+        set_layers("#network-arch",all_layers);
+    }
+
 });
 
+edit_layer = function(e,cell){
+    all_layers = $("#network-arch").tabulator("getData");
+    set_layers("#network-arch",all_layers);
+}
 
 set_layers = function(id,data){
     $(id).tabulator("setData", data);
@@ -38,6 +68,15 @@ var HttpClient = function() {
     }
 }
 
+function validate(layer) {
+    // Add some validation for a single layer
+    var current_layers = $("#network-arch").tabulator("getData");
+    if (current_layers.filter(d => d.name == layer.name).length > 0)
+        return false;
+
+    return true;
+}
+
 validate_form = function() {
     // Validate the rest of the form
     return true;
@@ -55,12 +94,14 @@ remove_bads = function(str) {
 get_other_params = function() {
     
     var dict = {
-        "name": d3.select("#Name").property('value'),
+        "name"    : d3.select("#Name").property('value'),
         "comments": d3.select("#Comments").property('value'),
-        "size": d3.select("#InputSize").property('value'),
-        "shape": d3.select("#InputShape").property('value'),
-        "loss": d3.select("#LossFunct").property('value'),
-        "user": localStorage.username
+        "input"   : d3.select("#InputSize").property('value'),
+        "loss"    : d3.select("#LossFunct").property('value'),
+        "batchsz" : d3.select("#Batch_Size").property('value'),
+        "shuffle" : d3.select("#Shuffle").property('checked'),
+        "steps"   : d3.select("#Train_Steps").property('value'),
+        "user"    : localStorage.username
     }
     var url = ""
     for (var key in dict)
@@ -91,35 +132,41 @@ submit_layers = function() {
     }
 }
 
+// Toolbar Events
+
+$("#tool-edit").bind("click",function(){
+    var selectedData = $("#network-arch").tabulator("getSelectedData")[0];
+    layers = [newLayer(selectedData.type,+$("#InputSize").val().slice(0,1),selectedData)]
+    build_list();    
+    d3.select("#add_layer").text('Edit').on("click","")
+    $("#add_layer").bind("click",function(){        
+        layers[0].layer = selectedData.layer;
+        all_layers[selectedData.layer-1] = layers[0]
+        set_layers("#network-arch",all_layers)
+        layers = [newLayer("Select",+$("#InputSize").val().slice(0,1))];
+        build_list();
+    });
+});
+
+$("#tool-copy").bind("click",function(){
+    var selectedData = $("#network-arch").tabulator("getSelectedData")[0];
+    var new_layer = newLayer(selectedData.type, +$("#InputSize").val().slice(0,1), selectedData)
+    trim_copy = function(str){
+        if (str.indexOf('-Copy') > 0)
+            return str.slice(0,str.indexOf('-Copy'));        
+        return str;
+    }
+    var dups = all_layers.filter(d => trim_copy(d.name) == trim_copy(selectedData.name))
+    new_layer.name = trim_copy(new_layer.name)+"-Copy"+dups.length;
+    new_layer.layer = all_layers.length+1
+    all_layers.push(new_layer)
+    set_layers("#network-arch",all_layers)
+})
+$("#tool-delete").bind("click",function(){
+    var selectedData = $("#network-arch").tabulator("getSelectedData")[0];
+    all_layers = all_layers.filter(d => d.layer != selectedData.layer);
+    var cnt=1; all_layers.forEach(d => d.layer = cnt++);
+    set_layers("#network-arch",all_layers);
+})
 
 
-// function handleFileSelect(evt) {
-//     var files = evt.target.files; // FileList object
-
-//     // Loop through the FileList and render image files as thumbnails.
-//     for (var i = 0, f; f = files[i]; i++) {
-
-//       // Only process image files.
-//       if (!f.type.match('image.*')) {
-//         continue;
-//       }
-
-//       var reader = new FileReader();
-
-//       // Closure to capture the file information.
-//       reader.onload = (function(theFile) {
-//         return function(e) {
-//           // Render thumbnail.
-//           var span = document.createElement('span');
-//           span.innerHTML = ['<img class="thumb" src="', e.target.result,
-//                             '" title="', escape(theFile.name), '"/>'].join('');
-//           document.getElementById('list').insertBefore(span, null);
-//         };
-//       })(f);
-
-//       // Read in the image file as a data URL.
-//       console.log(reader.readAsDataURL(f));
-//     }
-//   }
-
-//   document.getElementById('Files').addEventListener('change', handleFileSelect, false);

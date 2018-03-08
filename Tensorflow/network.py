@@ -8,47 +8,50 @@ import math
 # import user_space_utils as utils
 from importlib.machinery import SourceFileLoader
 utils = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_utils.py").load_module()
-
+ds    = SourceFileLoader("datastore", "../WebRequest/datastore.py").load_module()
 
 tf.logging.set_verbosity(tf.logging.INFO)
 USER_DATA_PATH = utils.USER_DATA_PATH
 
 class Network:
     def __init__(self,username,job,params):
+        ds.change_status(params['train']['user'],params['train']['job'],'Building')
         user_sub_path = utils.create_user_sub_path(username, job)
         self.params = params
         self.classifier = tf.estimator.Estimator(
             model_fn=self.model, model_dir=USER_DATA_PATH+user_sub_path+'/model')
+        ds.change_status(self.params['train']['user'],self.params['train']['job'],'Built')
 
 
-    def model(self,features, labels, mode):
+    def model(self,features, labels, mode):        
         prev_layer_out = None
-        for i in self.params['layers']:
-            if i['layer_type'] == 'input':
-                prev_layer_out = tf.reshape(features['x'],i['shape'])
-            elif i['layer_type'] == 'conv2d':
-                activation = self.parse_activation(i['activation'])
-                prev_layer_out = tf.layers.conv2d(
-                    inputs=prev_layer_out,
-                    filters=i['filters'],
-                    kernel_size=i['kernel_size'],
-                    padding=i['padding'],
-                    activation=activation)
-            elif i['layer_type'] == 'maxpool2d':
-                prev_layer_out = tf.layers.max_pooling2d(
-                    inputs=prev_layer_out, 
-                    pool_size=i['pool_size'], 
-                    strides=i['strides'])
-            elif i['layer_type'] == 'fcl':
-                activation = self.parse_activation(i['activation'])
-                prev_layer_out = tf.contrib.layers.flatten(prev_layer_out)
-                prev_layer_out = tf.layers.dense(inputs=prev_layer_out, units=i['units'], activation=activation)
-                if 'drop_out' in i:
+        if self.params['train']['input_size'] == "2D":
+            for i in self.params['layers']:
+                if i['type'] == 'input':
+                    prev_layer_out = tf.reshape(features['x'],i['shape'])
+                elif i['type'] == 'conv':
+                    activation = self.parse_activation(i['activation'])
+                    prev_layer_out = tf.layers.conv2d(
+                        inputs=prev_layer_out,
+                        filters=i['filters'],
+                        kernel_size=i['kernel_size'],
+                        padding=i['padding'],
+                        activation=activation)
+                elif i['type'] == 'maxpool':
+                    prev_layer_out = tf.layers.max_pooling2d(
+                        inputs=prev_layer_out, 
+                        pool_size=i['pool_size'], 
+                        strides=i['strides'])
+                elif i['type'] == 'fcl':
+                    activation = self.parse_activation(i['activation'])
+                    prev_layer_out = tf.contrib.layers.flatten(prev_layer_out)
+                    prev_layer_out = tf.layers.dense(inputs=prev_layer_out, units=i['units'], activation=activation)
+                elif i['type'] == 'drop_out':
                     prev_layer_out = tf.layers.dropout(
-                        inputs=prev_layer_out, rate=i['drop_out']['rate'], 
+                        inputs=prev_layer_out, rate=i['rate'], 
                         training=mode == tf.estimator.ModeKeys.TRAIN)
-            elif i['layer_type'] == 'out':
-                prev_layer_out = tf.layers.dense(inputs=prev_layer_out, units=i['units'])
+                elif i['type'] == 'out':
+                    prev_layer_out = tf.layers.dense(inputs=prev_layer_out, units=i['units'])
 
         predictions =  {
             "class": tf.argmax(input=prev_layer_out, axis=1),
@@ -57,12 +60,13 @@ class Network:
         if mode == tf.estimator.ModeKeys.PREDICT:
             return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
         loss = None
-        if 'soft_max_cross_entropy' in self.params['train']['loss']['loss_type']:
+        # if self.params['train']['loss'] == 'soft_max_cross_entropy':
+        if self.params['train']['loss'] == 'softmax':
             loss = tf.losses.sparse_softmax_cross_entropy(labels=labels, logits=prev_layer_out)
         if mode == tf.estimator.ModeKeys.TRAIN:
             optimizer = None
-            if self.params['train']['optimizer']['train_type'] == 'gradient_descent':
-                optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.params['train']['learning_rate'])
+            if self.params['train']['optimizer']['type'] == 'grad':
+                optimizer = tf.train.GradientDescentOptimizer(learning_rate=self.params['train']['optimizer']['rate'])
             train_op = optimizer.minimize(
                 loss=loss,
                 global_step=tf.train.get_global_step())
@@ -73,32 +77,39 @@ class Network:
         return tf.estimator.EstimatorSpec(
             mode=mode, loss=loss, eval_metric_ops=eval_metric_ops)
 
+
     def train(self,x,y):
+        ds.change_status(self.params['train']['user'],self.params['train']['job'],'Training')        
         train_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": x},
             y=y,
-            batch_size=self.params['train']['batch_size'],
+            batch_size=int(self.params['train']['batch_size']),
             num_epochs=None,
-            shuffle=self.params['train']['shuffle_batch'])
+            shuffle=bool(self.params['train']['shuffle_batch']))
         self.classifier.train(
             input_fn=train_input_fn,
-            steps=self.params['train']['training_steps'])
+            steps=int(self.params['train']['training_steps']))
+        ds.change_status(self.params['train']['user'],self.params['train']['job'],'Trained')
 
     def eval(self,x, y):
+        ds.change_status(self.params['train']['user'],self.params['train']['job'],'Evaluating')
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": x},
             y=y,
             num_epochs=1,
             shuffle=False)
         eval_results = self.classifier.evaluate(input_fn=eval_input_fn)
+        ds.change_status(self.params['train']['user'],self.params['train']['job'],'Evaluated')
         return eval_results
 
     def predict(self,x):
+        ds.change_status(self.params['train']['user'],self.params['train']['job'],'Predicting')
         pred_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": x},
             num_epochs=1,
             shuffle=False)
         pred_results = self.classifier.predict(input_fn=pred_input_fn)
+        ds.change_status(self.params['train']['user'],self.params['train']['job'],'Predicted')
         return pred_results
 
     def parse_activation(self,act) :

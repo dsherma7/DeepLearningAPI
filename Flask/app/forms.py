@@ -28,15 +28,15 @@ class MainForm(FlaskForm):
     LossFuncs  = [('Select','Select a Loss Function'), ("log","Log Loss"), ("hinge","Hinge Loss"), ("mse","Mean Squared Error"), ("AbsDif","Absolute Difference"), ("CosDif","Cosine Difference"), ("mpse","Mean Pairwise Squared Error"), ("sigmoid","Sigmoid Cross Entropy"), ("softmax","Softmax Cross Entropy"), ("sparseSoftmax","Sparse Softmax Cross Entropy")]
 
     InputSize  = SelectField('InputSize', choices=Sizes, default="2D")
-    InputShape = IntegerField('InputShape')
+    # InputShape = IntegerField('InputShape')
     LayerType  = SelectField('LayerType', choices=LayerTypes, default='Select')
-    Optimizer  = SelectField('Optimizer', choices=Optimizers, default='Select', validators=[validators.NoneOf(values=['Select'], message='This field is required')])
-    LossFunct  = SelectField('Loss Function', choices=LossFuncs, default='Select', validators=[validators.NoneOf(values=['Select'], message='This field is required')])
+    Optimizer  = SelectField('Optimizer', choices=Optimizers, default='grad', validators=[validators.NoneOf(values=['Select'], message='This field is required')])
+    LossFunct  = SelectField('Loss Function', choices=LossFuncs, default='mse', validators=[validators.NoneOf(values=['Select'], message='This field is required')])
     Name       = StringField('Name', validators=[DataRequired('This field is required')])    
-    Comments   = StringField('Name')    
-    # Date       = DateField('Date',validators=[validators.InputRequired()], format='%m/%d/%Y')
-
-    submitted  = False
+    Comments   = StringField('Comments')    
+    Batch_Size = IntegerField('Batch_Size',default=100)
+    Train_Steps= IntegerField('Train_Steps',default=1)
+    Shuffle    = BooleanField('Shuffle',default=True)
 
 class StatusForm(FlaskForm):
     '''
@@ -59,3 +59,7 @@ class SignUpForm(FlaskForm):
     Generates the Signup Form. Also, no WTF elements are used
     '''    
 
+class HomeForm(FlaskForm):
+    '''
+    Generates the Home Page Form. Also, no WTF elements are used
+    '''        

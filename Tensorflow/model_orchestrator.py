@@ -11,9 +11,9 @@ import pickle as pickle
 # import user_space_handler as us
 # import user_space_utils as utils
 from importlib.machinery import SourceFileLoader
-network = SourceFileLoader("network", "../Tensorflow/network.py").load_module()
-utils   = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_utils.py").load_module()
-us      = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_handler.py").load_module()
+net   = SourceFileLoader("network", "../Tensorflow/network.py").load_module()
+utils = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_utils.py").load_module()
+us    = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_handler.py").load_module()
 
 
 
@@ -45,7 +45,7 @@ def predict(username, job, data_set_type):
 def create_network(username, job):
     params = us.get_architecture(username, job)
     print('create network')
-    Network(username,job,params=params)
+    net.Network(username,job,params=params)
 
 
 

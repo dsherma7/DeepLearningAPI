@@ -4,7 +4,6 @@ import numpy as np
 import pickle as pickle
 from sklearn.model_selection import train_test_split
 
-
 #These commands are just to create us example data
 def load_data(filename):
     with (open(filename, "rb")) as openfile: 
@@ -15,20 +14,19 @@ X_train, X_test, y_train, y_test = train_test_split(combined_data, combined_labe
 
 
 # These are the commands that will be used to publish data. 
-# it will save the 'X_train' data in ../userspace/npjoodi/001/train_x
+# it will save the 'X_train' data in ../userspace/dsherman/001/train_x
 # If the file path is not created, it will create it automatically
-orch.publish_data(X_train, 'npjoodi', '001', 'train', 'x' )
-orch.publish_data(y_train, 'npjoodi', '001', 'train', 'y' )
-orch.publish_data(X_test, 'npjoodi', '001', 'test', 'x' )
-orch.publish_data(y_test, 'npjoodi', '001', 'test', 'y' )
+orch.publish_data(X_train, 'dsherman', 'J00020', 'train', 'x' )
+orch.publish_data(y_train, 'dsherman', 'J00020', 'train', 'y' )
+orch.publish_data(X_test, 'dsherman', 'J00020', 'test', 'x' )
+orch.publish_data(y_test, 'dsherman', 'J00020', 'test', 'y' )
 
 # This command will create the network. It makes a request to 
 # datastore to load the params using the username and job id.
 # I am currently hardcoding the params because we do not
 # have the data in the format that this code works with
 # no return
-orch.create_network('npjoodi', '001')
-
+orch.create_network('dsherman', 'J00020')
 
 # This command will train the network for the specific user
 # and job id. The last option tells the network which
@@ -36,12 +34,12 @@ orch.create_network('npjoodi', '001')
 # the train data. But we could train on the test data if we wanted to
 # this will save the model in the userspace
 # no return
-orch.train_network('npjoodi', '001', 'train')
+orch.train_network('dsherman', 'J00020', 'train')
 
 # Evaluate the model with the same logic as above. It will use the 
 # stored model in the userspace to do this.
 # simply returns the accuracy and loss in one object for now
-orch.eval_network('npjoodi', '001', 'test')
+orch.eval_network('dsherman', 'J00020', 'test')
 
 # predict with no ground truth
 # returns an array of objects:
@@ -49,5 +47,5 @@ orch.eval_network('npjoodi', '001', 'test')
 #       'probabilities:[[the probabilities of each class as an array of floats]]'
 #     }
 # and object for each prediction
-orch.predict('npjoodi', '001', 'test')
+orch.predict('dsherman', 'J00020', 'test')
 

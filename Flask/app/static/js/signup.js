@@ -1,8 +1,23 @@
 End = function(){
     SetStorage(d3.select('#remember').property('checked'));
+    var url  = "/_add_usr?user=" + $("#uname").val();
+        url += "&params="+get_other_params();
+    var client = new HttpClient();
+    client.get(url, function(response) {
+        // do something with response
+
+    });
     window.location.href = '/status';
 }
 
+get_other_params = function() {
+    params = {
+        "username":$("#uname").val(),
+        "password":$("#uname").val(),
+        "email":$("#uname").val()        
+    }
+    return JSON.stringify(params);
+}
 
 var HttpClient = function() {
     this.get = function(aUrl, aCallback) {

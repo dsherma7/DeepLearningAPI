@@ -9,17 +9,27 @@ form.invis,div.invis {
 }
 
 div.main {
-	background-color: #ffffff00;
-	background: linear-gradient(#dddddda1,#dbdbdbde,#c3bfbf);
+	/*background-color: #ffffff00;
+	background: linear-gradient(#dddddda1,#dbdbdbde,#c3bfbf);*/
+	/*background-color: #dbdbdbd1;
+    background: linear-gradient(#d3cfcfde,#b9b9b9d1);*/
+    background-color: #f9f9f9b8;
+    background: linear-gradient(#fff8f8ba,#d5d5d5cf);
 }
 
 .table-striped > tbody > tr:nth-of-type(odd) {
     background-color: #f9f9f9b8;
+	background-color: #dbdbdbd1;
 }
 
-div.architecture {
-	background-color: #f9f9f9b8;
-	background: linear-gradient(#f9f9f9b8,#c9c9c9c2,#f9f9f9b8);
+tr.advanced {
+	background-color: #d4d3d5;
+    border: #fffeff87;
+    border-width: 3px;
+    background: linear-gradient(#c7c7c7,#d4d3d5,#f8f3f3a8);
+    border-style: outset;
+    line-height: initial;
+    color: #514f4f;
 }
 
 div.msg {
@@ -33,3 +43,42 @@ h3.msg-good {
 h3.msg-bad {
 	color: #c442fa;
 }
+
+i.expand {
+	cursor: pointer;
+}
+
+.txt-err {
+	color: #a538b2;
+    font: italic 12px arial;
+}
+
+/* 
+	Network architecture table 
+*/
+
+div.architecture {
+	background-color: #f9f9f9b8;
+	background: linear-gradient(#f9f9f9b8,#c9c9c9c2,#f9f9f9b8);
+}
+
+div.toolbar {
+	padding: 0;
+}
+
+div.toolbar i{
+	cursor: pointer;
+}
+
+div.toolbar .col-md-2,
+div.toolbar .col-md-3,
+div.toolbar .col-md-4 {
+	padding: 0;
+	text-align: center;
+}
+
+span.toolbar {
+	font-size: 13px;
+	padding-left: 5px;
+}
+
