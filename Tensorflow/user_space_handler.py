@@ -54,11 +54,11 @@ def get_architecture(username, job_id):
     return  {
         'layers': [
             {
-                'type': 'input',
+                'type': 'Input',
                 'shape': [-1, 28, 28, 1]
             },
             {
-                'type': 'conv2d',
+                'type': 'conv',
                 'filters':32,
                 'kernel_size':[5, 5],
                 'padding': "same",
@@ -77,7 +77,7 @@ def get_architecture(username, job_id):
                 'activation': 'relu'
             },
             {
-                'type': 'maxpool2d',
+                'type': 'maxpool',
                 'pool_size':[2, 2],
                 'strides':2
             },
