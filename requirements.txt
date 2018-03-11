@@ -1,0 +1,8 @@
+flask
+wtforms
+flask_wtf
+google-cloud-datastore
+pandas
+sklearn
+tensorflow
+numpy

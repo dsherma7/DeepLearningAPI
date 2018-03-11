@@ -16,11 +16,9 @@ utils = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_utils.py"
 us    = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_handler.py").load_module()
 
 
-
 def publish_data(obj, username, job, data_set_type, data_type):
     us.create_user_space(username, job)
     us.save_object(obj, username, job,data_set_type, data_type)
-
 
 def train_network(username, job, data_set_type):
     data, network, labels = us.get_user_space_data(username, job, data_set_type)
@@ -47,9 +45,10 @@ def create_network(username, job):
     print('create network')
     net.Network(username,job,params=params)
 
-
-
-
+def get_dtypes(username, job):
+    dirs = us.read_userspace(username,job)
+    dtypes = [x.replace('_x','') for x in dirs if '_x' in x]
+    return dtypes
 
 
 

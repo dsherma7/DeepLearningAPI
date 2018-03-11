@@ -1,16 +1,29 @@
 /*
-    Custom Tooltip
+    Custom Alert Messages
 */
 
-div.tooltip {	
-    position: absolute;			
-    text-align: center;			
-    width: 60px;					
-    height: 28px;					
-    padding: 2px;				
-    font: 12px sans-serif;		
-    background: lightsteelblue;	
-    border: 0px;		
-    border-radius: 8px;			
-    pointer-events: none;			
+.jconfirm.status .jconfirm-bg{
 }
+.jconfirm.status .jconfirm-box{
+}
+.jconfirm.status .jconfirm-box.loading{
+}
+.jconfirm.status .jconfirm-box.loading:before{
+}
+.jconfirm.status .jconfirm-box.loading:after{
+}
+.jconfirm.status .jconfirm-box .jconfirm-closeIcon{
+}
+.jconfirm.status .jconfirm-box .jconfirm-title-c{
+}
+.jconfirm.status .jconfirm-box .jconfirm-content-pane{
+}
+.jconfirm.status .jconfirm-box .jconfirm-content{
+}
+.jconfirm.status .jconfirm-box .jconfirm-buttons{
+}
+.jconfirm.status .jconfirm-box .jconfirm-buttons button{
+}
+
+
+

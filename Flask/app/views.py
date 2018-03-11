@@ -60,19 +60,9 @@ def submit_layers():
 
 	params = {'train':train,'layers':layers}
 	
-	job = datastore.get_next_jobid(user)
-	
-	print(divider)
-	print("# Layers: "+str(len(layers)))
-	print("Types " + str([x['type'] for x in layers]))
-	print(str(train))
-	print(divider)
-	
-	datastore.add_job(params);
-	
+	job = datastore.get_next_jobid(user)	
+	datastore.add_job(params);	
 	orch.create_network(user, job)
-
-	# return Response(json.dumps(layers),  mimetype='application/json')
 	return jsonify(out = {'status':200,"msg":"OK",'job':job})
 
 @app.route('/_get_jobs',methods=['GET'])
@@ -89,54 +79,76 @@ def _set_comment():
 	datastore.set_comment(user,job,comment)
 	return jsonify(status="200")
 
+@app.route('/_train',methods=['GET','SET'])
+def _train_model():
+	user = request.args.get('user', 0, type=str)
+	job = request.args.get('job',  0, type=str)	
+	datatype = request.args.get('datatype',  0, type=str)	
+	# orch.train_network(user, job, datatype)
+	return jsonify({'status':"200",'msg':"Job "+job+" is Training!"})
+
+@app.route('/_test',methods=['GET','SET'])
+def _test_model():
+	user = request.args.get('user', 0, type=str)
+	job = request.args.get('job',  0, type=str)	
+	datatype = request.args.get('datatype',  0, type=str)	
+	# orch.predict(user, job, datatype)
+	return jsonify({'status':"200","msg":"Job "+job+" is Testing!"})
+
+@app.route('/_eval',methods=['GET','SET'])
+def _eval_model():
+	user = request.args.get('user', 0, type=str)
+	job = request.args.get('job',  0, type=str)	
+	datatype = request.args.get('datatype',  0, type=str)	
+	# orch.eval_network(user, job, datatype)
+	return jsonify({'status':"200",'msg':"Job "+job+" is Evaluating!"})
+
+
+@app.route('/_get_dtypes',methods=['GET'])
+def _get_dtypes():	
+	user = request.args.get('user', 0, type=str)
+	job = request.args.get('job',  0, type=str)	
+	dtypes = orch.get_dtypes(user,job)
+	return jsonify(dtypes=dtypes)
+
+@app.route('/_archive',methods=['GET'])
+def _archive():	
+	user = request.args.get('user', 0, type=str)
+	job = request.args.get('job',  0, type=str)	
+	datastore.change_status(user,job,"archived")
+	return jsonify(status="200")
+
+
+
 @app.route('/status',methods=['GET','POST'])
 def job_status():
 	form = StatusForm()
 	if form.validate_on_submit():
-		user = form.username.data
-		if user != "":
-			flash('Success!')
-			# data  = request.files['Files'].read()
-			# lbls  = request.files['Labels'].read()
+		user = form.username.data		
+		print(form.selected.data)
+		if user == "":
+			flash("Please Login First!")
+		elif form.selected.data == "":						
+			flash("No Job Selected!")
+		else:
+			selected = json.loads(form.selected.data)	
 			f1 = form.Files.data
 			l1 = form.Labels.data
-			f2 = request.files['Files']
-			l2 = request.files['Labels']
 			data = pd.read_csv(f1)
 			lbls = pd.read_csv(l1)		
-			data2 = np.array(f2.read())	
-			lbls2 = np.array(l2.read())
 			dtype = form.DataType.data
-			selected = json.loads(form.selected.data)
-
-			print(divider)
-			print("username: " + user)
-			print(type(f1))
-			print(type(f2))
-			print(type(l1))
-			print(type(l2))
-			print(type(data))
-			print(type(lbls))
-			print(type(data2))
-			print(type(lbls2))
-			print(data.shape,lbls.shape,data2.shape,lbls2.shape)
-			print(dtype)
-			print(str(selected))
-			print(divider)
 
 			[data,lbls] = format_data(data,lbls)
-
-			if dtype == "all":
-				X_train, X_test, y_train, y_test = train_test_split(data, lbls, test_size=0.33, random_state=42)	
-				orch.publish_data(X_train, user, selected['job'], 'train', 'x' )
-				orch.publish_data(y_train, user, selected['job'], 'train', 'y' )
-				orch.publish_data(X_test, user, selected['job'], 'test', 'x' )
-				orch.publish_data(y_test, user, selected['job'], 'test', 'y' )
+			
+			if dtype in orch.get_dtypes(user,selected['job']):
+				flash('Data type already exists! Choose a new name.')
 			else:
 				orch.publish_data(data, user, selected['job'], dtype, 'x' )
-				orch.publish_data(lbls, user, selected['job'], dtype, 'y' )
-		else:
-			flash("Please Login First!")
+				orch.publish_data(lbls, user, selected['job'], dtype, 'y' )									
+				flash('Success!')
+
+	elif request.method == 'POST':
+		flash("All fields must be filled out!")
 
 	return render_template('status.html',title='Job Status',form=form)
 

@@ -41,6 +41,12 @@ def load_data(username, job, data_set_type,data_type):
     with (open(filename, "rb")) as openfile: 
         return pickle.load(openfile)
 
+def read_userspace(username, job):
+    dirname = USER_DATA_PATH+'/'+username+'/'+job+'/'
+    if os.path.isdir(dirname):
+        return os.listdir(dirname)
+    return []
+
 
 def get_architecture(username, job_id):
     print (username,job_id)

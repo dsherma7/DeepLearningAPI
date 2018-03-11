@@ -42,10 +42,10 @@ class StatusForm(FlaskForm):
     '''
     Generates the Job Status page
     '''
-    Sizes    = [('all','All'),('train','Train'),('test','Test'),('cv','CV')]
     Files    = FileField('Import',validators=[FileRequired(), FileAllowed(['csv','zip','tar','png','xlsx','xls'], 'Invalid data format!')])
     Labels   = FileField('Labels',validators=[FileRequired(), FileAllowed(['csv','zip','tar','png','xlsx','xls'], 'Invalid data format!')])
-    DataType = SelectField('DataType', choices=Sizes, default="All")
+    
+    DataType = StringField('DataType', validators=[DataRequired("The data must be named!")])
     username = HiddenField("username")
     selected = HiddenField("selected")
 

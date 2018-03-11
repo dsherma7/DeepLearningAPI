@@ -89,8 +89,8 @@ function DenseLayer(layer=null) {
 	this.comments = (layer != null ? layer.comments : null);
 	this.units = (layer != null ? layer.units : null);
 	this.activation = (layer != null ? layer.activation : null);
-	this.usebias = (layer != null ? layer.usebias : null);
-	this.reuse = (layer != null ? layer.reuse : null);
+	this.usebias = (layer != null ? layer.usebias==1 : null);
+	this.reuse = (layer != null ? layer.reuse==1 : null);
 
 	this.attr = [
 		{"Var":"name", "Name":"Name","Fields":[{"Field":"StringField","Placeholder":"Dense - ##","Value":this.name}]},
@@ -139,11 +139,13 @@ function InputLayer(sz,layer=null) {
 	this.name  = (layer != null ? layer.name : null);
 	this.comments = (layer != null ? layer.comments : null);
 	this.shape = (layer != null ? layer.shape : Array(sz).fill(null));	
+	this.channels = (layer != null ? layer.channels : null);
 
 	this.attr = [
 		{"Var":"name", "Name":"Name","Fields":[{"Field":"StringField","Value":this.name}]},
 		{"Var":"comments", "Name":"Comments","Fields":[{"Field":"StringField","Placeholder":"(optional)","Value":this.comments}]},
-		{"Var":"shape", "Name":"Shape","Fields":[{"Field":"FilterField","Placeholder":"(integer)","Value":this.shape}]}
+		{"Var":"shape", "Name":"Shape","Fields":[{"Field":"FilterField","Placeholder":"(integer)","Value":this.shape}]},
+		{"Var":"channels", "Name":"# Channels","Fields":[{"Field":"NumberField","Placeholder":"(integer)","Value":this.channels}]}
 	];
 }
 

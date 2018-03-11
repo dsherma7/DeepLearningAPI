@@ -7,17 +7,6 @@
     <link href="static/css/status.css" rel="stylesheet">  
 </head>
 
-<script type="text/javascript">
-  $(document).ready(function(){
-    user = localStorage.username;
-    client.get('/_get_jobs?user='+user, function(response) {
-      // do something with response
-      $("#example-table").tabulator("setData", JSON.parse(response));
-    });
-    $("#username").val(localStorage.username)    
-  });  
-</script>
-
 <nav class="navbar navbar-default navbar-inverse" role="navigation">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -40,7 +29,7 @@
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Job Templates <span class="caret"></span></a>
           <ul class="dropdown-menu" role="menu">
-            <li><a href="#">InceptNet</a></li>
+            <li><a href="#">Inception-v4</a></li>
             <li><a href="#">ResNet</a></li>
             <li><a href="#">AlexNet</a></li>
             <li class="divider"></li>
@@ -102,18 +91,34 @@
   </div><!-- /.container-fluid -->
 </nav>
 
-<div class="row">
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <h4><font color='blue'>{{ message }} </font></h4>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-	</div> <!-- Header -->
+<div id="tabulator-controls" class="well toolbar">
+    
+    <div class="col-md-5" align="left">
+      <i class="fa fa-filter fa-fw" id="clear-filter"></i> <input name="name" type="text" id="txt-filter" placeholder="Filter Table By Job">
+      <i class="fa" id="tool-datatype">
+        <span class="toolbar" style="font-size: 10px;">Hide Archived:</span>
+        <input name="ck-archived" id="ck-archived" type="checkbox" checked></button>
+      </i>
+    </div>
       
+    <div class="col-md-3 buttons" align="left">
+      <button name="Train" id="btn-train" type="button" class="depend"><i class="fa fa-cog"></i> Train</button>
+      <button name="Test"  id="btn-test"  type="button" class="depend"><i class="fa fa-info-circle"></i> Test</button>      
+      <button name="Evaluate"  id="btn-eval"  type="button" class="depend"><i class="fa fa-question-circle"></i> Eval</button>
+    </div>
+
+    <div class="col-md-4" style="text-align:right; padding-right:10px;">
+      <button name="Download" id="btn-download" class="depend"><i class="fa fa-download"></i> Download</button>
+      <i class="fa fa-bars dropbtn" id="advanced-menu">
+        <div id="adv-menu" class="dropdown-content">
+          <i class="fa fa-cog depend" onclick="archive();">Archive Job</i>
+          <i class="fa fa-cog" >Adv. Filters</i>
+          <i class="fa fa-cog" >More</i>
+        </div>
+      </i> 
+    </div>  
+
+</div>
 <div id="example-table"></div>
 <form action="#" method="post" name="Sub" enctype=multipart/form-data class="invis">
 {{ form.csrf_token }}
@@ -123,25 +128,34 @@
 
 <div class="well toolbar" id="train-toolbar">
     <div class="col-md-2">
-        <b class="function"> Train </b>
+        <b class="function"> Publish Data </b>
     </div>
     <div class="col-md-3">
-       <i class="fa fa-database" id="tool-data"><span class="toolbar">Data</span>{{ form.Files }}</i>       
+       <i class="fa" id="tool-data" class="depend"><span class="toolbar">Data:</span>{{ form.Files }}</i>       
     </div>    
     <div class="col-md-3"> 
-      <i class="fa fa-tag" id="tool-labels"><span class="toolbar">Labels</span>{{ form.Labels }}</i>
+      <i class="fa" id="tool-labels" class="depend"><span class="toolbar">Labels:</span>{{ form.Labels }}</i>
     </div>
     <div class="col-md-2">
-       {{ form.DataType }}
+      <i class="fa" id="tool-datatype" class="depend"><span class="toolbar">Data Type:</span>{{ form.DataType }}</i>
     </div>        
     <div class="col-md-2">
-      <input  type="submit" name="submit" value="Import">
+      <input  type="submit" name="submit" id="submit" value="Import" class="depend"> 
     </div>        
 </div>
-
 </form>
 
-
+<div class="row">
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul id="messages">
+                {% for message in messages %}
+                    <h4><font color='blue'>{{ message }} </font></h4>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+  </div> <!-- Header -->
 
 
 

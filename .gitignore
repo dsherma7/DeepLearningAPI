@@ -112,3 +112,6 @@ user_space/*
 
 # Ignore npm helper files
 package-lock.json
+
+# Javascript packages 
+Flask/app/static/alert/jquery-confirm-master

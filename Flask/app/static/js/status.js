@@ -2,19 +2,167 @@
 $("#btn-login").bind("click",function(){
     SetStorage(d3.select('#nav-remember').property('checked'));
     user = localStorage.username;
+    var client = new HttpClient();
     client.get('/_get_jobs?user='+user, function(response) {
-        // do something with response
         $("#example-table").tabulator("setData", JSON.parse(response));
-    });
+    });    
+    $("#username").val(localStorage.username);
+    $("#example-table").tabulator("setFilter", "status", "!=", "archived");
 });
 
-// create Tabulator on DOM element with id "example-table"
-var cellAlert = function(e,cell){
-	cell_val = cell.getData()[e.currentTarget.getAttribute('tabulator-field')]
-	alert("Cell "+cell_val+' clicked!')
+// Archive a job
+archive = function(){
+    var data = $("#example-table").tabulator("getSelectedData")[0];
+    if (!data){ return NoJob(); }
+    var user = data.user, job = data.job;
+    var client = new HttpClient();
+    var url = "_archive?user=" + user + "&job=" + job;
+    client.get(url, function(response) { 
+        response = JSON.parse(response);
+        if (response.status != STATUS_OK)
+            $.alert("Returned error code: "+response.code,"Archive Failed")
+    });
 }
 
-var chg_comment = function(cell){
+
+// Upper Toolbar
+check_archived = function(){
+    if (d3.select("#ck-archived").node().checked){
+        $("#example-table").tabulator("setFilter", "status", "!=", "archived");
+    }else{
+        $("#example-table").tabulator("setFilter","job","!=","");
+    }
+}
+
+$("#clear-filter").on('click',function(x){ 
+    $("#txt-filter").val(undefined); 
+    $("#example-table").tabulator("setFilter","job","!=","");
+    check_archived();
+});
+$("#txt-filter").on('keydown keyup',function(x){
+    var job = x.currentTarget.value;
+    var selected = $("#example-table").tabulator("getSelectedData")[0];
+    if (job){
+        $("#example-table").tabulator("setFilter", function(data,filterParams){
+            return (data.job.includes(filterParams.job) || (selected && (data.job == selected.job))) 
+                    && (!d3.select("#ck-archived").node().checked || data.status!="archived");
+
+        },{'job':job});
+    }else{
+        $("#example-table").tabulator("setFilter","job","!=","");        
+        check_archived();
+    }
+})
+$("#ck-archived").bind("change",check_archived)
+$("#btn-train,#btn-test,#btn-eval").on('click',function(x){TrainTestEval(x)});
+$("#btn-download").on('click',function(){ $.alert("Coming Soon!"); });
+$("#advanced-menu").on('click',function(){ document.getElementById("adv-menu").classList.toggle("show"); });
+
+
+NoJob = function(){
+    $.alert({
+        theme:"modern",
+        columnClass: 'medium',
+        title:"No Job Selected",
+        content:"A target job must first be selected!",
+        buttons: {
+            ok: {
+                keys: ['enter', 'esc']
+            }
+        }        
+    })
+}
+
+TrainTestEval = function(x){
+    var type = x.currentTarget.name;
+    var data = $("#example-table").tabulator("getSelectedData")[0];
+    if (!data){ return NoJob(); }        
+    var user = data.user, job = data.job;
+    var client = new HttpClient();
+    var url = "_get_dtypes?user=" + user + "&job=" + job;
+    client.get(url, function(response) { 
+        var dtypes = JSON.parse(response).dtypes;
+        if (!dtypes.length){
+            $.alert({
+                theme:"modern",
+                columnClass: 'medium',
+                title:"Publish Data",
+                content:"No data found for job "+job+'!<br>'+"Use \"Publish Data\" below to publish a dataset.",
+                buttons: {
+                    ok: {
+                        keys: ['enter', 'esc']
+                    }
+                }
+            });
+        }else{
+            var selectVal;             
+            $.confirm({
+                theme:"modern",
+                columnClass: 'medium',
+                title:  type + ' Network',
+                content: 'Choose a dataset to ' + type + ' the network for job ' + job +'.',
+                type: 'blue',
+                backgroundDismiss: 'submit',
+                typeAnimated: true,    
+                onContentReady: function(){
+                    d3.select("div.jconfirm-buttons")              
+                      .insert("select",":first-child")
+                      .attr("id",'jconfirm-select')              
+                      .classed("jconfirm-select",true)
+                      .on('change',function(x){
+                        selectVal = this.value;
+                      }).selectAll("option")
+                        .data(['[ Type ]'].concat(dtypes))
+                        .enter()
+                        .append("option")
+                        .text(d=>d);
+                },
+                buttons: {
+                        submit: {
+                            text: type,
+                            btnClass: 'btn-blue',
+                            action: function(){
+                                if (selectVal){
+                                    $.confirm({
+                                        theme: "modern",
+                                        title: 'Confirm '+type,
+                                        content: 'Are you sure you want to '+ type + " Job "+job + "?",
+                                        type: 'blue',
+                                        typeAnimated: true,
+                                        buttons: {
+                                            confirm:{
+                                                text: selectVal,
+                                                btnClass: 'btn-blue',
+                                                action:function(){                                        
+                                                    var url = "/_"+type.toLowerCase()+"?user=" + user + "&job=" + job +"&datatype=" + selectVal;                                        
+                                                    var client = new HttpClient();
+                                                    client.get(url, function(response) { 
+                                                        $.alert(JSON.parse(response).msg);
+                                                    });
+                                                }
+                                            },
+                                            close: function () {                                                    
+                                            }    
+                                        }
+                                    });
+                                }else{
+                                    d3.select("div.jconfirm-box")
+                                      .append("text")
+                                      .classed("jconfirm-err",true)
+                                      .text("Error, please select a dataset!")
+                                      return false;
+                                }
+                            }
+                        },
+                        close: function () {                
+                        }
+                    }
+            });  
+        }      
+    });
+}
+
+chg_comment = function(cell){
 	var data = cell.getData();
 	var url = "/_set_comment?user=" + data.user + "&job=" + data.job +"&comment=" + data.comment;
 	var client = new HttpClient();
@@ -23,65 +171,68 @@ var chg_comment = function(cell){
 	});
 }
 
+var status_enum = {'designed':1,'building':1.2,'built':1.5,'training':2,'trained':3,'testing':4,'tested':5,'evaluating':6,'evaluated':7,'downloaded':8};
+status_sorter = function(a,b) { return status_enum[a.toLowerCase()]-status_enum[b.toLowerCase()]; }
+
+// Build data Table
 $("#example-table").tabulator({
     height:400, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
     layout:"fitColumns", //fit columns to width of table (optional)
     movableColumns:true,
     resizableRows:true,
+    responsiveLayout:true,
     selectable:1,
     placeholder:"No Jobs For User "+localStorage.username,    
-    tooltip: true,
+    tooltips:true,
+    // pagination:"local", //enable local pagination.
+    // paginationSize:12, 
     initialSort: [
     	{column:"job",dir:"asc"}
     ],
+    index:"job",
     columns:[ //Define Table Columns
-        {title:"Job", field:"job", align:"center", width:80, cellClick:function(e, cell){cellAlert(e,cell)}},
-        {title:"Project", field:"project", align:"left",width:270},
-        {title:"Submit Date",field:"date", sorter:"date", align:"center",width:160},
-        {title:"Progress", field:"progress", align:"left", formatter:"progress",formatterParams:{color:"#6b3399"},width:170},
-        {title:"Status", field:"status", align:"center", width:80, cellClick:function(e, cell){cellAlert(e,cell)}},
-        {title:"Comment", field:"comment", editor:true, cellEdited:function(e,cell){chg_comment(e,cell)}}        
+        {title:"Job",        field:"job",     align:"center", minWidth:80, frozen:true,response:0},
+        {title:"Project",    field:"project", align:"left",   minWidth:200,response:2},
+        {title:"Submit Date",field:"date",    align:"center", minWidth:120,sorter:"date",response:4},
+        {title:"Progress",   field:"progress",align:"left",   minWidth:80, formatter:"progress",formatterParams:{color:"#6b3399"},response:3},
+        {title:"Status",     field:"status",  align:"center", minWidth:50, sorter:status_sorter,response:1},
+        {title:"Comment",    field:"comment", align:"left",   minWidth:80, cellEdited:chg_comment,editor:true,response:5}        
     ],
     rowSelected:function(row){
-        //row - row component for the selected row
-        $("#selected").val( JSON.stringify(row.getData()) )
+        $("#selected").val( JSON.stringify(row.getData()))
+        // row.freeze();
+    },        
+    rowDeselected:function(row){
+        // row.unfreeze();
     }    
 });
 
-
-var HttpClient = function() {
-    this.get = function(aUrl, aCallback) {
-        var anHttpRequest = new XMLHttpRequest();
-        anHttpRequest.onreadystatechange = function() { 
-            if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200)
-                aCallback(anHttpRequest.responseText);
-        }
-
-        anHttpRequest.open( "GET", aUrl, true );            
-        anHttpRequest.send( null );
-    }
+// Reads the jobs for a user and sets the data table
+on_load = function(){
+    get_data();
+    // Sets username
+    $("#submit").on("mouseover",function(){ 
+        $("#username").val(localStorage.username); 
+    });
+    // Removes flash on image
+    d3.select("#messages")
+      .selectAll("font")
+      .transition().duration(5000).ease(d3.easeBack)
+      .style("opacity",0)
+      .on("end",function(){
+        d3.select(this).remove()
+    });
+    // Hides any archived jobs
+    $("#example-table").tabulator("setFilter", "status", "!=", "archived");
 }
-var client = new HttpClient();
-
-
-
-// client.get('/_get_jobs?user=dsherman', function(response) {
-//     // do something with response
-//     $("#example-table").tabulator("setData", JSON.parse(response));
-// });
-
-//  Allows the user to see other users (just for debugging)
-// $(function() {
-//   $('select#users').bind('change', function() {    
-//     var user = $("select#users option:selected").text();
-
-//   $(document).bind("load",function(){
-//     client.get('/_get_jobs?user='+user, function(response) {
-//     	// do something with response
-//     	$("#example-table").tabulator("setData", JSON.parse(response));
-// 	});
-//   });
-// }); 
-
+get_data = function(){
+    var user = localStorage.username;
+    var client = new HttpClient();
+    client.get('/_get_jobs?user='+user, function(response) {
+        $("#example-table").tabulator("setData", JSON.parse(response));   
+        check_archived();
+    });    
+}; 
+$(document).ready(on_load);
 
 

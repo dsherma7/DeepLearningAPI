@@ -1,5 +1,3 @@
-var login = (localStorage.username != undefined ? localStorage.username : "Login ")
-d3.select("#dd-login").text(login)
 
 var layers = [
   new InputLayer(name="Input"),
@@ -72,7 +70,7 @@ function parse_params(obj,param,value) {
                 .attr("value",field.Value[i])
                 .attr('idx',i)
                 .on('change', function(d,j=i) {
-                  value[param.Var][+this.getAttribute('idx')] = this.value;
+                  value[param.Var][+this.getAttribute('idx')] = +this.value;
                 });
              if (i+1 < size)
               row.append("text").text("x");
@@ -119,7 +117,7 @@ function parse_params(obj,param,value) {
              .append("input")
              .attr("type","checkbox")
              .on('change', function(d) {
-                value[param.Var] = this.checked;
+                value[param.Var] = +this.checked;
              });
           break;
       }

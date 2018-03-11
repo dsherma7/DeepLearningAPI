@@ -14,6 +14,12 @@ function SetObjects(){
     d3.select("#dd-login").text(login)
 }    
 
+$("#btn-login").bind('click',function(){
+    var bool = $("#remember").val() != undefined ? d3.select("#remember").property("checked") : d3.select("#nav-remember").property("checked")
+    SetStorage(bool);
+    SetObjects();
+});
+
 // Update Local Storage
 function SetStorage(bool){
     localStorage.username = ($("#uname").val() != undefined ? $("#uname").val() : $("#nav-uname").val())

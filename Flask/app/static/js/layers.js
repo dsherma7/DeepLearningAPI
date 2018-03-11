@@ -55,25 +55,12 @@ set_layers = function(id,data){
 }
 set_layers("#network-arch",all_layers);
 
-var HttpClient = function() {
-    this.get = function(aUrl, aCallback) {
-        var anHttpRequest = new XMLHttpRequest();
-        anHttpRequest.onreadystatechange = function() { 
-            if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200)
-                aCallback(anHttpRequest.responseText);
-        }
-
-        anHttpRequest.open( "GET", aUrl, true );            
-        anHttpRequest.send( null );
-    }
-}
 
 function validate(layer) {
     // Add some validation for a single layer
     var current_layers = $("#network-arch").tabulator("getData");
     if (current_layers.filter(d => d.name == layer.name).length > 0)
         return false;
-
     return true;
 }
 
@@ -94,13 +81,13 @@ remove_bads = function(str) {
 get_other_params = function() {
     
     var dict = {
-        "name"    : d3.select("#Name").property('value'),
-        "comments": d3.select("#Comments").property('value'),
-        "input"   : d3.select("#InputSize").property('value'),
-        "loss"    : d3.select("#LossFunct").property('value'),
-        "batchsz" : d3.select("#Batch_Size").property('value'),
-        "shuffle" : d3.select("#Shuffle").property('checked'),
-        "steps"   : d3.select("#Train_Steps").property('value'),
+        "name"    :  d3.select("#Name").property('value'),
+        "comments":  d3.select("#Comments").property('value'),
+        "input"   :  d3.select("#InputSize").property('value'),
+        "loss"    :  d3.select("#LossFunct").property('value'),
+        "batchsz" : +d3.select("#Batch_Size").property('value'),
+        "shuffle" : +d3.select("#Shuffle").property('checked'),
+        "steps"   : +d3.select("#Train_Steps").property('value'),
         "user"    : localStorage.username
     }
     var url = ""
@@ -109,7 +96,14 @@ get_other_params = function() {
     return url;
 }
 
+format_layers = function(layers) {
+    layers.filter(d => d.type == "Input").forEach(d => d.shape = [-1].concat(d.shape).concat(d.channel))
+    // More as needed
+    return layers;
+}
+
 submit_layers = function() {
+    all_layers = format_layers(all_layers)
     localStorage.all_layers = JSON.stringify(all_layers);
     localStorage.optimizer  = JSON.stringify(optimizer);
     if (validate_form) {        
