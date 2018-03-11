@@ -17,6 +17,7 @@ us    = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_handler.p
 
 
 
+
 def publish_data(obj, username, job, data_set_type, data_type):
     us.create_user_space(username, job)
     us.save_object(obj, username, job,data_set_type, data_type)
@@ -43,6 +44,7 @@ def predict(username, job, data_set_type):
     return out
 
 def create_network(username, job):
+    us.create_user_space(username, job)
     params = us.get_architecture(username, job)
     print('create network')
     net.Network(username,job,params=params)

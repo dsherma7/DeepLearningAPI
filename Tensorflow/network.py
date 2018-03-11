@@ -18,40 +18,40 @@ class Network:
         ds.change_status(params['train']['user'],params['train']['job'],'Building')
         user_sub_path = utils.create_user_sub_path(username, job)
         self.params = params
+        print(USER_DATA_PATH+user_sub_path)
         self.classifier = tf.estimator.Estimator(
             model_fn=self.model, model_dir=USER_DATA_PATH+user_sub_path+'/model')
         ds.change_status(self.params['train']['user'],self.params['train']['job'],'Built')
 
 
-    def model(self,features, labels, mode):        
+    def model(self,features, labels, mode):    
         prev_layer_out = None
-        if self.params['train']['input_size'] == "2D":
-            for i in self.params['layers']:
-                if i['type'] == 'input':
-                    prev_layer_out = tf.reshape(features['x'],i['shape'])
-                elif i['type'] == 'conv':
-                    activation = self.parse_activation(i['activation'])
-                    prev_layer_out = tf.layers.conv2d(
-                        inputs=prev_layer_out,
-                        filters=i['filters'],
-                        kernel_size=i['kernel_size'],
-                        padding=i['padding'],
-                        activation=activation)
-                elif i['type'] == 'maxpool':
-                    prev_layer_out = tf.layers.max_pooling2d(
-                        inputs=prev_layer_out, 
-                        pool_size=i['pool_size'], 
-                        strides=i['strides'])
-                elif i['type'] == 'fcl':
-                    activation = self.parse_activation(i['activation'])
-                    prev_layer_out = tf.contrib.layers.flatten(prev_layer_out)
-                    prev_layer_out = tf.layers.dense(inputs=prev_layer_out, units=i['units'], activation=activation)
-                elif i['type'] == 'drop_out':
-                    prev_layer_out = tf.layers.dropout(
-                        inputs=prev_layer_out, rate=i['rate'], 
-                        training=mode == tf.estimator.ModeKeys.TRAIN)
-                elif i['type'] == 'out':
-                    prev_layer_out = tf.layers.dense(inputs=prev_layer_out, units=i['units'])
+        for i in self.params['layers']:
+            if i['type'] == 'input':
+                prev_layer_out = tf.reshape(features['x'],i['shape'])
+            elif i['type'] == 'conv':
+                activation = self.parse_activation(i['activation'])
+                prev_layer_out = self.get_conv()(
+                    inputs=prev_layer_out,
+                    filters=i['filters'],
+                    kernel_size=i['kernel_size'],
+                    padding=i['padding'],
+                    activation=activation)
+            elif i['type'] == 'maxpool':
+                prev_layer_out = self.get_max_pooling()(
+                    inputs=prev_layer_out, 
+                    pool_size=i['pool_size'], 
+                    strides=i['strides'])
+            elif i['type'] == 'fcl':
+                activation = self.parse_activation(i['activation'])
+                prev_layer_out = tf.contrib.layers.flatten(prev_layer_out)
+                prev_layer_out = tf.layers.dense(inputs=prev_layer_out, units=i['units'], activation=activation)
+            elif i['type'] == 'drop_out':
+                prev_layer_out = tf.layers.dropout(
+                    inputs=prev_layer_out, rate=i['rate'], 
+                    training=mode == tf.estimator.ModeKeys.TRAIN)
+            elif i['type'] == 'out':
+                prev_layer_out = tf.layers.dense(inputs=prev_layer_out, units=i['units'])
 
         predictions =  {
             "class": tf.argmax(input=prev_layer_out, axis=1),
@@ -121,6 +121,20 @@ class Network:
         elif act == 'tanh':
             activation = tf.tanh
         return activation
+
+    def get_max_pooling(self) :
+        self.params['train']['input_size'] = self.params['train']['input_size'].replace("'", "")
+        if self.params['train']['input_size'] == '2D':
+            return tf.layers.max_pooling2d
+        elif self.params['train']['input_size'] == '1D':
+            return tf.layers.max_pooling1d
+
+    def get_conv(self) :
+        self.params['train']['input_size'] = self.params['train']['input_size'].replace("'", "")
+        if self.params['train']['input_size'] == '2D':
+            return tf.layers.conv2d
+        elif self.params['train']['input_size'] == '1D':
+            return tf.layers.conv1d
 
 
 
