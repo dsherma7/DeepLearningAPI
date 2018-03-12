@@ -131,13 +131,69 @@ TrainTestEval = function(x){
                                         typeAnimated: true,
                                         buttons: {
                                             confirm:{
-                                                text: selectVal,
+                                                text: type,
                                                 btnClass: 'btn-blue',
                                                 action:function(){                                        
                                                     var url = "/_"+type.toLowerCase()+"?user=" + user + "&job=" + job +"&datatype=" + selectVal;                                        
                                                     var client = new HttpClient();
+                                                    // Loading bar
+                                                    d3.select("#message-row").append("div").classed("loader",true);
+                                                    d3.select("#message-row").append("i").classed("loader",true).text("Loading ......");
+                                                    d3.select(".loader").transition().duration(60000).style("opacity",0).on("end",function(){ 
+                                                        $.alert("Failed"); d3.selectAll(".loader").remove();
+                                                    });
+                                                    
                                                     client.get(url, function(response) { 
-                                                        $.alert(JSON.parse(response).msg);
+                                                        if (type == 'Train'){
+                                                            $.alert(JSON.parse(response).msg);
+                                                            d3.selectAll(".loader").remove();
+                                                        }else if (type == 'Test'){
+                                                            response = JSON.parse(response);
+                                                            var csvContent = "";
+                                                            var preds = response.probs, classes = response.classes;
+                                                            // Build Header
+                                                            csvContent += "Prediction,";
+                                                            for (var i=0; i<preds[0].length; i++){
+                                                                csvContent += "Prob_"+i;
+                                                                if (i < preds[0].length-1)
+                                                                    csvContent += ",";
+                                                            }
+                                                            csvContent += "\n";
+                                                            // Builds remaining rows
+                                                            for (var i=0; i<classes.length; i++){
+                                                                csvContent += classes[i]+","+preds[i].join(",")+"\n";
+                                                            }
+                                                            // Download as CSV                                                            
+                                                            csvData = new Blob([csvContent], { type: 'text/csv' }); 
+                                                            var csvUrl = URL.createObjectURL(csvData);
+                                                            var link = document.createElement("a");
+                                                            link.href =  csvUrl;
+                                                            link.setAttribute('download', job+"_"+selectVal+".csv");
+                                                            link.click(); 
+                                                            d3.selectAll(".loader").remove();
+                                                        }else if (type == 'Evaluate'){
+                                                            var evals = JSON.parse(response).evals;
+                                                            var evals_txt = "<div class='evals'>" + "<b>Data:</b>" + selectVal + "<br>"+ 
+                                                                            "<b>Accuracy:</b>" + evals.accuracy + "<br>"+
+                                                                            "<b>Loss:</b>" + evals.loss + "<br>"+
+                                                                            "<b>Global Step:</b>" + evals.global_step + "</div>";
+                                                            $.alert({
+                                                                theme:"modern",
+                                                                title:  "Evaluation of "+job,
+                                                                content: evals_txt,
+                                                                type: 'blue',
+                                                                backgroundDismiss: 'submit',
+                                                                buttons: {
+                                                                    ok: {
+                                                                        keys: ['enter', 'esc']
+                                                                    }
+                                                                } 
+                                                            });
+                                                            d3.selectAll(".loader").remove();
+                                                        }else {
+                                                            $.alert("Bad Type specifed!");
+                                                            d3.selectAll(".loader").remove();
+                                                        }                                                        
                                                     });
                                                 }
                                             },

@@ -1,8 +1,6 @@
 
 var layers = [
   new InputLayer(name="Input"),
-  // new ConvLayer(name="Conv-1"),
-  // new OutputLayer(name="Output")
 ];
 
 var optimizer = newOptimizer('grad');
@@ -116,6 +114,7 @@ function parse_params(obj,param,value) {
           obj.append("td")
              .append("input")
              .attr("type","checkbox")
+             .property('checked', field.Value)
              .on('change', function(d) {
                 value[param.Var] = +this.checked;
              });

@@ -1,6 +1,8 @@
 LayerTypes = ['Select','Input','Convolutional','Fully Connected','Max Pooling','Dropout','Batch Normalization','Output'];
+LayerMap = {"Select":"Select","Convolutional":"conv","Fully Connected":"fcl",'Input':"input","Max Pooling":"maxpool","Dropout":"drop_out","Batch Normalization":"batch_norm","Output":"out"};
+LayerUnmap = {"Select":"Select","conv":"Convolutional","fcl":"Fully Connected","input":"Input","maxpool":"Max Pooling","drop_out":"Dropout","batch_norm":"Batch Normalization","out":"Output"};
 activations = ["ReLU","ReLU6","CReLU","ExpLU","SoftPlus","SoftSign","Sigmoid","Tanh"];
-paddings = ["Valid","Same"];
+paddings = ["same","valid"];
 
 /*********
 * Layers *
@@ -48,9 +50,9 @@ function ConvLayer(sz,layer=null) {
 	this.filters = (layer != null ? layer.filters : null);
 	this.kernel_size = (layer != null ? layer.kernel_size : Array(sz).fill(null));
 	this.strides = (layer != null ? layer.strides : null);
-	this.padding = (layer != null ? layer.padding : null);
-	this.activation = (layer != null ? layer.activation : null);
-	this.usebias = (layer != null ? layer.usebias : null);
+	this.padding = (layer != null ? layer.padding : 'same');
+	this.activation = (layer != null ? layer.activation : 'ReLU');
+	this.usebias = (layer != null ? layer.usebias : true);
 	this.reuse = (layer != null ? layer.reuse : null);
 
 	this.attr = [
@@ -72,7 +74,7 @@ function MaxPoolLayer(sz,layer=null) {
 	this.comments = (layer != null ? layer.comments : null);
 	this.pool_size = (layer != null ? layer.pool_size : Array(sz).fill(null));
 	this.strides = (layer != null ? layer.strides : null);
-	this.padding = (layer != null ? layer.padding : null);
+	this.padding = (layer != null ? layer.padding : 'same');
 
 	this.attr = [
 		{"Var":"name", "Name":"Name","Fields":[{"Field":"StringField","Placeholder":"MaxPool - ##","Value":this.name}]},
@@ -88,7 +90,7 @@ function DenseLayer(layer=null) {
 	this.name = (layer != null ? layer.name : null);
 	this.comments = (layer != null ? layer.comments : null);
 	this.units = (layer != null ? layer.units : null);
-	this.activation = (layer != null ? layer.activation : null);
+	this.activation = (layer != null ? layer.activation : 'ReLU');
 	this.usebias = (layer != null ? layer.usebias==1 : null);
 	this.reuse = (layer != null ? layer.reuse==1 : null);
 
@@ -108,12 +110,20 @@ function DropLayer(layer=null) {
 	this.comments = (layer != null ? layer.comments : null);
 	this.rate = (layer != null ? layer.rate : null);
 	this.training = (layer != null ? layer.training : null);
+	this.units = (layer != null ? layer.units : null);
+	this.activation = (layer != null ? layer.activation : 'ReLU');
+	this.usebias = (layer != null ? layer.usebias==1 : null);
+	this.reuse = (layer != null ? layer.reuse==1 : null);
 
 	this.attr = [
 		{"Var":"name", "Name":"Name","Fields":[{"Field":"StringField","Placeholder":"Drop - ##","Value":this.name}]},
 		{"Var":"comments", "Name":"Comments","Fields":[{"Field":"StringField","Placeholder":"(optional)","Value":this.comments}]},
 		{"Var":"rate", "Name":"Rate","Fields":[{"Field":"NumberField","Placeholder":"(decimal)","Value":this.rate}]},
-		{"Var":"training", "Name":"Training","Fields":[{"Field":"BooleanField","Value":this.training}]}
+		{"Var":"training", "Name":"Training","Fields":[{"Field":"BooleanField","Value":this.training}]},
+		{"Var":"units", "Name":"Units","Fields":[{"Field":"NumberField","Placeholder":"(integer)","Value":this.units}]},
+		{"Var":"activation", "Name":"Activation","Fields":[{"Field":"SelectField","Choices":activations,"Value":this.activation}]},
+		{"Var":"usebias", "Name":"Use Bias","Fields":[{"Field":"BooleanField","Value":this.usebias}]},
+		{"Var":"reuse", "Name":"Reuse","Fields":[{"Field":"BooleanField","Value":this.reuse}]}
 	];
 }
 
@@ -200,9 +210,9 @@ function newOptimizer(type) {
 
 function GradOpt(name, learning_rate, locking) {
 	this.type = "grad";
-	this.name = name;
-	this.learning_rate = learning_rate;
-	this.locking = locking;
+	this.name = (name != null ? name : this.type);
+	this.learning_rate = ( learning_rate != null ? learning_rate : 0.001);
+	this.locking = (locking != null ? locking : false);
 
 	this.attr = [
 		{"Var":"name", "Name":"Name","Fields":[{"Field":"StringField","Value":"GradientDescent"}]},
@@ -213,11 +223,11 @@ function GradOpt(name, learning_rate, locking) {
 
 function AdadeltaOpt(name, learning_rate, rho, epsilon, locking) {
 	this.type = "adadelta";
-	this.name = name;
-	this.learning_rate = learning_rate;
-	this.rho = rho;
+	this.name = (name != null ? name : this.type);
+	this.learning_rate = ( learning_rate != null ? learning_rate : 0.001);
+	this.rho = tho;
 	this.epsilon = epsilon;
-	this.locking = locking;
+	this.locking = (locking != null ? locking : false);
 
 	this.attr = [
 		{"Var":"name", "Name":"Name","Fields":[{"Field":"StringField","Value":"Adadelta"}]},
@@ -230,10 +240,10 @@ function AdadeltaOpt(name, learning_rate, rho, epsilon, locking) {
 
 function AdagradOpt(name, learning_rate, initAccVal, locking) {
 	this.type = "adagrad";
-	this.name = name;
-	this.learning_rate = learning_rate;
+	this.name = (name != null ? name : this.type);
+	this.learning_rate = ( learning_rate != null ? learning_rate : 0.001);
 	this.initAccVal = initAccVal;
-	this.locking = locking;
+	this.locking = (locking != null ? locking : false);
 
 	this.attr = [
 		{"Var":"name", "Name":"Name","Fields":[{"Field":"StringField","Value":"Adagrad"}]},
@@ -245,12 +255,12 @@ function AdagradOpt(name, learning_rate, initAccVal, locking) {
 
 function AdagradDAOpt(name, learning_rate, initAccVal, l1RegStr, l2RegStr, locking) {
 	this.type = "adagradda";
-	this.name = name;
-	this.learning_rate = learning_rate;
+	this.name = (name != null ? name : this.type);
+	this.learning_rate = ( learning_rate != null ? learning_rate : 0.001);
 	this.initAccVal = initAccVal;
 	this.l1RegStr = l1RegStr;
 	this.l2RegStr = l2RegStr;
-	this.locking = locking;
+	this.locking = (locking != null ? locking : false);
 
 	this.attr = [
 		{"Var":"name", "Name":"Name","Fields":[{"Field":"StringField","Value":"AdagradDA"}]},
@@ -264,12 +274,12 @@ function AdagradDAOpt(name, learning_rate, initAccVal, l1RegStr, l2RegStr, locki
 
 function AdamOpt(name, learning_rate, beta1, beta2, epsilon, locking) {
 	this.type = "adam";
-	this.name = name;
-	this.learning_rate = learning_rate;
+	this.name = (name != null ? name : this.type);
+	this.learning_rate = ( learning_rate != null ? learning_rate : 0.001);
 	this.beta1 = beta1;
 	this.beta2 = beta2;
 	this.epsilon = epsilon;
-	this.locking = locking;
+	this.locking = (locking != null ? locking : false);
 
 	this.attr = [
 		{"Var":"name", "Name":"Name","Fields":[{"Field":"StringField","Value":"Adam"}]},
@@ -283,9 +293,9 @@ function AdamOpt(name, learning_rate, beta1, beta2, epsilon, locking) {
 
 function MomentumOpt(name, learning_rate, locking, nesterov) {
 	this.type = "momentum";
-	this.name = name;
-	this.learning_rate = learning_rate;
-	this.locking = locking;
+	this.name = (name != null ? name : this.type);
+	this.learning_rate = ( learning_rate != null ? learning_rate : 0.001);
+	this.locking = (locking != null ? locking : false);
 	this.nesterov = nesterov;
 
 	this.attr = [

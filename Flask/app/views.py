@@ -2,6 +2,7 @@ from wtforms import SelectField, TextField, TextAreaField, validators, StringFie
 from flask import render_template, flash, jsonify, Flask, request, Response
 from sklearn.model_selection import train_test_split
 from importlib.machinery import SourceFileLoader
+from werkzeug import secure_filename
 from app import app, csrf
 import pickle as pickle
 from .forms import * 
@@ -44,7 +45,7 @@ def submit_layers():
 	# Get other parameters	
 	name  = request.args.get('name', 0, type=str)
 	date  = request.args.get('date', 0, type=str)
-	size  = request.args.get('size', 0, type=str)
+	size  = request.args.get('input', 0, type=str)
 	loss  = request.args.get('loss', 0, type=str)
 	user  = request.args.get('user', 0, type=str)
 	shape = request.args.get('shape',0, type=str)
@@ -84,24 +85,27 @@ def _train_model():
 	user = request.args.get('user', 0, type=str)
 	job = request.args.get('job',  0, type=str)	
 	datatype = request.args.get('datatype',  0, type=str)	
-	# orch.train_network(user, job, datatype)
-	return jsonify({'status':"200",'msg':"Job "+job+" is Training!"})
+	orch.train_network(user, job, datatype)
+	return jsonify({'status':"200",'msg':"Job "+job+" done Training!"})
 
 @app.route('/_test',methods=['GET','SET'])
 def _test_model():
 	user = request.args.get('user', 0, type=str)
 	job = request.args.get('job',  0, type=str)	
 	datatype = request.args.get('datatype',  0, type=str)	
-	# orch.predict(user, job, datatype)
-	return jsonify({'status':"200","msg":"Job "+job+" is Testing!"})
+	preds = orch.predict(user, job, datatype)
+	classes = [float(x['class']) for x in preds]
+	probs = [[float(x) for x in y['probabilities']] for y in preds] 
 
-@app.route('/_eval',methods=['GET','SET'])
+	return jsonify({'status':"200","probs":probs,"classes":classes})
+
+@app.route('/_evaluate',methods=['GET','SET'])
 def _eval_model():
 	user = request.args.get('user', 0, type=str)
 	job = request.args.get('job',  0, type=str)	
 	datatype = request.args.get('datatype',  0, type=str)	
-	# orch.eval_network(user, job, datatype)
-	return jsonify({'status':"200",'msg':"Job "+job+" is Evaluating!"})
+	evals = orch.eval_network(user, job, datatype)
+	return jsonify({'status':"200",'evals':{x:round(float(evals[x]),3) for x in evals}})
 
 
 @app.route('/_get_dtypes',methods=['GET'])
@@ -119,7 +123,6 @@ def _archive():
 	return jsonify(status="200")
 
 
-
 @app.route('/status',methods=['GET','POST'])
 def job_status():
 	form = StatusForm()
@@ -134,8 +137,8 @@ def job_status():
 			selected = json.loads(form.selected.data)	
 			f1 = form.Files.data
 			l1 = form.Labels.data
-			data = pd.read_csv(f1)
-			lbls = pd.read_csv(l1)		
+			data = read_data(f1)
+			lbls = read_data(l1)		
 			dtype = form.DataType.data
 
 			[data,lbls] = format_data(data,lbls)
@@ -152,10 +155,16 @@ def job_status():
 
 	return render_template('status.html',title='Job Status',form=form)
 
+def read_data(f):
+	if '.csv' in f.filename:
+		return pd.read_csv(f)
+	return pd.read_table(f)
 
 def format_data(X,y):
+	if y.shape[1] == 1:
+		y = [x[1] for x in y.itertuples()]
 	if True: # Change this to check for PIC type images
-		return np.array(X,dtype=float),np.array(y,dtype=float)
+		return np.array(X,dtype=np.float32),np.array(y,dtype=np.int32)
 
 @app.route('/home',methods=['GET','POST'])
 def home():

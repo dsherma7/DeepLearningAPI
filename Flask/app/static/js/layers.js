@@ -97,18 +97,22 @@ get_other_params = function() {
 }
 
 format_layers = function(layers) {
-    layers.filter(d => d.type == "Input").forEach(d => d.shape = [-1].concat(d.shape).concat(d.channel))
+    layers.filter(d => d.type == "Input").forEach(d => d.shape = [-1].concat(d.shape).concat([d.channels]))
+    layers.forEach(d => d.type = LayerMap[d.type]);
+    layers.filter(d => d.activation).forEach(d => d.activation = d.activation.toLowerCase())
+
     // More as needed
     return layers;
 }
 
 submit_layers = function() {
-    all_layers = format_layers(all_layers)
     localStorage.all_layers = JSON.stringify(all_layers);
     localStorage.optimizer  = JSON.stringify(optimizer);
+    new_layers = all_layers.slice();
+    new_layers = format_layers(new_layers);    
     if (validate_form) {        
         var client = new HttpClient();
-        var url  = '/_submit_layers?layers='+remove_bads(JSON.stringify(all_layers));
+        var url  = '/_submit_layers?layers='+remove_bads(JSON.stringify(new_layers));
             url += '&optimizer='+remove_bads(JSON.stringify(optimizer));
             url += get_other_params();
         client.get(url, function(response) {
