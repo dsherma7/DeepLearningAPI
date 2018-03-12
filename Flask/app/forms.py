@@ -31,7 +31,7 @@ class MainForm(FlaskForm):
     # InputShape = IntegerField('InputShape')
     LayerType  = SelectField('LayerType', choices=LayerTypes, default='Select')
     Optimizer  = SelectField('Optimizer', choices=Optimizers, default='grad', validators=[validators.NoneOf(values=['Select'], message='This field is required')])
-    LossFunct  = SelectField('Loss Function', choices=LossFuncs, default='mse', validators=[validators.NoneOf(values=['Select'], message='This field is required')])
+    LossFunct  = SelectField('Loss Function', choices=LossFuncs, default='softmax', validators=[validators.NoneOf(values=['Select'], message='This field is required')])
     Name       = StringField('Name', validators=[DataRequired('This field is required')])    
     Comments   = StringField('Comments')    
     Batch_Size = IntegerField('Batch_Size',default=100)

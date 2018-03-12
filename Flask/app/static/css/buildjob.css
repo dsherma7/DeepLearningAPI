@@ -9,12 +9,9 @@ form.invis,div.invis {
 }
 
 div.main {
-	/*background-color: #ffffff00;
-	background: linear-gradient(#dddddda1,#dbdbdbde,#c3bfbf);*/
-	/*background-color: #dbdbdbd1;
-    background: linear-gradient(#d3cfcfde,#b9b9b9d1);*/
     background-color: #f9f9f9b8;
     background: linear-gradient(#fff8f8ba,#d5d5d5cf);
+    min-width: 390px;
 }
 
 .table-striped > tbody > tr:nth-of-type(odd) {

@@ -73,6 +73,87 @@ NoJob = function(){
     })
 }
 
+Kill_Loading = function(){
+    d3.selectAll(".loader").transition();
+    d3.selectAll(".loader").remove();
+}
+
+Attach_Data = function(user,job,type,selectVal) {
+    $.confirm({
+        theme: "modern",
+        title: 'Confirm '+type,
+        content: 'Are you sure you want to '+ type + " Job "+ job + "?",
+        type: 'blue',
+        typeAnimated: true,
+        buttons: {
+            confirm:{
+                text: type,
+                btnClass: 'btn-blue',
+                action:function(){                                        
+                    var url = "/_"+type.toLowerCase()+"?user=" + user + "&job=" + job +"&datatype=" + selectVal;                                        
+                    var client = new HttpClient();
+                    // Loading bar
+                    d3.select("#message-row").append("div").classed("loader",true);
+                    d3.select("#message-row").append("i").classed("loader",true).text("Loading ......");
+                    d3.select(".loader").transition().duration(60000).style("opacity",0).on("end",function(){ 
+                        $.alert("Failed"); d3.selectAll(".loader").remove();
+                    });                    
+                    client.get(url, function(response) { 
+                        if (type == 'Train'){
+                            $.alert(JSON.parse(response).msg);
+                            Kill_Loading();
+                        }else if (type == 'Test'){
+                            response = JSON.parse(response);
+                            var csvContent = "";
+                            var preds = response.probs, classes = response.classes;
+                            // Build Header
+                            csvContent += "Prediction,";
+                            for (var i=0; i<preds[0].length; i++){
+                                csvContent += "Prob_"+i;
+                                if (i < preds[0].length-1)
+                                    csvContent += ",";
+                            }
+                            csvContent += "\n";
+                            // Builds remaining rows
+                            for (var i=0; i<classes.length; i++){
+                                csvContent += classes[i]+","+preds[i].join(",")+"\n";
+                            }
+                            // Download as CSV                            
+                            SaveCSV(csvContent,job+"_"+selectVal+".csv");                                                                                      
+                            Kill_Loading();
+                        }else if (type == 'Evaluate'){
+                            var evals = JSON.parse(response).evals;
+                            var evals_txt = "<div class='evals'>" + "<b>Data:</b>" + selectVal + "<br>"+ 
+                                            "<b>Accuracy:</b>" + evals.accuracy + "<br>"+
+                                            "<b>Loss:</b>" + evals.loss + "<br>"+
+                                            "<b>Global Step:</b>" + evals.global_step + "</div>";
+                            $.alert({
+                                theme:"modern",
+                                title:  "Evaluation of "+job,
+                                content: evals_txt,
+                                type: 'blue',
+                                backgroundDismiss: 'submit',
+                                buttons: {
+                                    ok: {
+                                        keys: ['enter', 'esc']
+                                    }
+                                } 
+                            });
+                            Kill_Loading();
+                            
+                        }else {
+                            $.alert("Bad Type specifed!");
+                            Kill_Loading();
+                        }                                                        
+                    });
+                }
+            },
+            close: function () {                                                    
+            }    
+        }
+    });
+}
+
 TrainTestEval = function(x){
     var type = x.currentTarget.name;
     var data = $("#example-table").tabulator("getSelectedData")[0];
@@ -123,89 +204,10 @@ TrainTestEval = function(x){
                             btnClass: 'btn-blue',
                             action: function(){
                                 if (selectVal){
-                                    $.confirm({
-                                        theme: "modern",
-                                        title: 'Confirm '+type,
-                                        content: 'Are you sure you want to '+ type + " Job "+job + "?",
-                                        type: 'blue',
-                                        typeAnimated: true,
-                                        buttons: {
-                                            confirm:{
-                                                text: type,
-                                                btnClass: 'btn-blue',
-                                                action:function(){                                        
-                                                    var url = "/_"+type.toLowerCase()+"?user=" + user + "&job=" + job +"&datatype=" + selectVal;                                        
-                                                    var client = new HttpClient();
-                                                    // Loading bar
-                                                    d3.select("#message-row").append("div").classed("loader",true);
-                                                    d3.select("#message-row").append("i").classed("loader",true).text("Loading ......");
-                                                    d3.select(".loader").transition().duration(60000).style("opacity",0).on("end",function(){ 
-                                                        $.alert("Failed"); d3.selectAll(".loader").remove();
-                                                    });
-                                                    
-                                                    client.get(url, function(response) { 
-                                                        if (type == 'Train'){
-                                                            $.alert(JSON.parse(response).msg);
-                                                            d3.selectAll(".loader").remove();
-                                                        }else if (type == 'Test'){
-                                                            response = JSON.parse(response);
-                                                            var csvContent = "";
-                                                            var preds = response.probs, classes = response.classes;
-                                                            // Build Header
-                                                            csvContent += "Prediction,";
-                                                            for (var i=0; i<preds[0].length; i++){
-                                                                csvContent += "Prob_"+i;
-                                                                if (i < preds[0].length-1)
-                                                                    csvContent += ",";
-                                                            }
-                                                            csvContent += "\n";
-                                                            // Builds remaining rows
-                                                            for (var i=0; i<classes.length; i++){
-                                                                csvContent += classes[i]+","+preds[i].join(",")+"\n";
-                                                            }
-                                                            // Download as CSV                                                            
-                                                            csvData = new Blob([csvContent], { type: 'text/csv' }); 
-                                                            var csvUrl = URL.createObjectURL(csvData);
-                                                            var link = document.createElement("a");
-                                                            link.href =  csvUrl;
-                                                            link.setAttribute('download', job+"_"+selectVal+".csv");
-                                                            link.click(); 
-                                                            d3.selectAll(".loader").remove();
-                                                        }else if (type == 'Evaluate'){
-                                                            var evals = JSON.parse(response).evals;
-                                                            var evals_txt = "<div class='evals'>" + "<b>Data:</b>" + selectVal + "<br>"+ 
-                                                                            "<b>Accuracy:</b>" + evals.accuracy + "<br>"+
-                                                                            "<b>Loss:</b>" + evals.loss + "<br>"+
-                                                                            "<b>Global Step:</b>" + evals.global_step + "</div>";
-                                                            $.alert({
-                                                                theme:"modern",
-                                                                title:  "Evaluation of "+job,
-                                                                content: evals_txt,
-                                                                type: 'blue',
-                                                                backgroundDismiss: 'submit',
-                                                                buttons: {
-                                                                    ok: {
-                                                                        keys: ['enter', 'esc']
-                                                                    }
-                                                                } 
-                                                            });
-                                                            d3.selectAll(".loader").remove();
-                                                        }else {
-                                                            $.alert("Bad Type specifed!");
-                                                            d3.selectAll(".loader").remove();
-                                                        }                                                        
-                                                    });
-                                                }
-                                            },
-                                            close: function () {                                                    
-                                            }    
-                                        }
-                                    });
+                                    Attach_Data(user,job,type,selectVal);
                                 }else{
-                                    d3.select("div.jconfirm-box")
-                                      .append("text")
-                                      .classed("jconfirm-err",true)
-                                      .text("Error, please select a dataset!")
+                                    d3.select("div.jconfirm-box").append("text")
+                                      .classed("jconfirm-err",true).text("Error, please select a dataset!");
                                       return false;
                                 }
                             }
@@ -266,8 +268,8 @@ $("#example-table").tabulator({
 // Reads the jobs for a user and sets the data table
 on_load = function(){
     get_data();
-    // Sets username
-    $("#submit").on("mouseover",function(){ 
+    // Sets username    
+    $("#submit").on("mouseover focus",function(){ 
         $("#username").val(localStorage.username); 
     });
     // Removes flash on image

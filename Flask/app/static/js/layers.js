@@ -1,22 +1,30 @@
-var all_layers = [];
-if (localStorage.all_layers != undefined)
-    var all_layers = JSON.parse(localStorage.all_layers);
- 
+
+
+// Toggle the advanced params 
 $("#expand-advanced").bind("click",function(){    
     var display = d3.select("table.expand").style('display')
     d3.select("table.expand").style('display',(display == "none" ? "table": "none"));
     d3.select('#expand-advanced').style('display','none');
     d3.select('#collapse-advanced').style('display','table');
+    reset_height();
 });
 $("#collapse-advanced").bind("click",function(){
     var display = d3.select("table.expand").style('display')
     d3.select("table.expand").style('display',(display == "none" ? "table": "none"));
     d3.select('#expand-advanced').style('display','table');
     d3.select('#collapse-advanced').style('display','none');
+    reset_height();
 });
 
+reset_height = function(){
+    $("#network-arch").tabulator("setHeight",300);
+    var newHeight = d3.select("#tbl-col").node().getBoundingClientRect().height-60;
+    $("#network-arch").tabulator("setHeight",newHeight);
+}
+
+// Main Layer table
 $("#network-arch").tabulator({
-    height:270, 
+    height:300, 
     layout:"fitColumns", 
     movableColumns:false,
     movableRows:true,
@@ -106,8 +114,7 @@ format_layers = function(layers) {
 }
 
 submit_layers = function() {
-    localStorage.all_layers = JSON.stringify(all_layers);
-    localStorage.optimizer  = JSON.stringify(optimizer);
+    StoreNetwork();
     new_layers = all_layers.slice();
     new_layers = format_layers(new_layers);    
     if (validate_form) {        
@@ -130,8 +137,7 @@ submit_layers = function() {
     }
 }
 
-// Toolbar Events
-
+// Lower toolbar events for table
 $("#tool-edit").bind("click",function(){
     var selectedData = $("#network-arch").tabulator("getSelectedData")[0];
     layers = [newLayer(selectedData.type,+$("#InputSize").val().slice(0,1),selectedData)]
@@ -145,7 +151,6 @@ $("#tool-edit").bind("click",function(){
         build_list();
     });
 });
-
 $("#tool-copy").bind("click",function(){
     var selectedData = $("#network-arch").tabulator("getSelectedData")[0];
     var new_layer = newLayer(selectedData.type, +$("#InputSize").val().slice(0,1), selectedData)

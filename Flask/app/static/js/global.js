@@ -40,3 +40,38 @@ var HttpClient = function() {
     };
 }
 
+// Save CSV File from string
+SaveCSV = function(csvContent,filename)  {
+	csvData = new Blob([csvContent], { type: 'text/csv' }); 
+	var csvUrl = URL.createObjectURL(csvData);
+	var link = document.createElement("a");
+	link.href =  csvUrl;
+	link.setAttribute('download',filename);
+	link.click(); 
+}
+
+
+// Saved Models
+Template = function(model){
+	switch(model) {
+
+		case 'MNIST':
+			localStorage.all_layers = '[{"type":"Input","name":"Input","comments":"28x28 Input","shape":[28,28],"channels":1,"attr":[{"Var":"name","Name":"Name","Fields":[{"Field":"StringField","Value":"Input"}]},{"Var":"comments","Name":"Comments","Fields":[{"Field":"StringField","Placeholder":"(optional)","Value":null}]},{"Var":"shape","Name":"Shape","Fields":[{"Field":"FilterField","Placeholder":"(integer)","Value":[28,28]}]},{"Var":"channels","Name":"# Channels","Fields":[{"Field":"NumberField","Placeholder":"(integer)","Value":1}]}],"layer":1},{"type":"Convolutional","name":"conv1","comments":"32 5x5 Filters","filters":32,"kernel_size":[5,5],"strides":5,"padding":"same","activation":"ReLU","usebias":true,"reuse":null,"attr":[{"Var":"name","Name":"Name","Fields":[{"Field":"StringField","Placeholder":"Conv - ##","Value":"conv1"}]},{"Var":"comments","Name":"Comments","Fields":[{"Field":"StringField","Placeholder":"(optional)","Value":null}]},{"Var":"filters","Name":"# Filters","Fields":[{"Field":"NumberField","Value":32}]},{"Var":"kernel_size","Name":"Kernel Size","Fields":[{"Field":"FilterField","Placeholder":"(integer)","Value":[5,5]}]},{"Var":"strides","Name":"Stride Length","Fields":[{"Field":"NumberField","Placeholder":"(integer)","Value":5}]},{"Var":"padding","Name":"Padding","Fields":[{"Field":"SelectField","Choices":["same","valid"],"Value":"same"}]},{"Var":"activation","Name":"Activation","Fields":[{"Field":"SelectField","Choices":["ReLU","ReLU6","CReLU","ExpLU","SoftPlus","SoftSign","Sigmoid","Tanh"],"Value":"ReLU"}]},{"Var":"usebias","Name":"Use Bias","Fields":[{"Field":"BooleanField","Value":true}]},{"Var":"reuse","Name":"Reuse","Fields":[{"Field":"BooleanField","Value":null}]}],"layer":2},{"type":"Max Pooling","name":"maxpool1","comments":"5x5 Pooling","pool_size":[5,5],"strides":5,"padding":"same","attr":[{"Var":"name","Name":"Name","Fields":[{"Field":"StringField","Placeholder":"MaxPool - ##","Value":"maxpool1"}]},{"Var":"comments","Name":"Comments","Fields":[{"Field":"StringField","Placeholder":"(optional)","Value":null}]},{"Var":"pool_size","Name":"Pool Size","Fields":[{"Field":"FilterField","Placeholder":"(integer)","Value":[5,5]}]},{"Var":"strides","Name":"Stride Length","Fields":[{"Field":"NumberField","Placeholder":"(integer)","Value":5}]},{"Var":"padding","Name":"Padding","Fields":[{"Field":"SelectField","Choices":["same","valid"],"Value":"same"}]}],"layer":3},{"type":"Convolutional","name":"conv2","comments":"64 5x5 Filters","filters":64,"kernel_size":[5,5],"strides":5,"padding":"same","activation":"ReLU","usebias":true,"reuse":null,"attr":[{"Var":"name","Name":"Name","Fields":[{"Field":"StringField","Placeholder":"Conv - ##","Value":"conv2"}]},{"Var":"comments","Name":"Comments","Fields":[{"Field":"StringField","Placeholder":"(optional)","Value":null}]},{"Var":"filters","Name":"# Filters","Fields":[{"Field":"NumberField","Value":64}]},{"Var":"kernel_size","Name":"Kernel Size","Fields":[{"Field":"FilterField","Placeholder":"(integer)","Value":[5,5]}]},{"Var":"strides","Name":"Stride Length","Fields":[{"Field":"NumberField","Placeholder":"(integer)","Value":5}]},{"Var":"padding","Name":"Padding","Fields":[{"Field":"SelectField","Choices":["same","valid"],"Value":"same"}]},{"Var":"activation","Name":"Activation","Fields":[{"Field":"SelectField","Choices":["ReLU","ReLU6","CReLU","ExpLU","SoftPlus","SoftSign","Sigmoid","Tanh"],"Value":"ReLU"}]},{"Var":"usebias","Name":"Use Bias","Fields":[{"Field":"BooleanField","Value":true}]},{"Var":"reuse","Name":"Reuse","Fields":[{"Field":"BooleanField","Value":null}]}],"layer":4},{"type":"Max Pooling","name":"maxpool2","comments":"5x5 Pooling","pool_size":[5,5],"strides":5,"padding":"same","attr":[{"Var":"name","Name":"Name","Fields":[{"Field":"StringField","Placeholder":"MaxPool - ##","Value":"maxpool2"}]},{"Var":"comments","Name":"Comments","Fields":[{"Field":"StringField","Placeholder":"(optional)","Value":null}]},{"Var":"pool_size","Name":"Pool Size","Fields":[{"Field":"FilterField","Placeholder":"(integer)","Value":[5,5]}]},{"Var":"strides","Name":"Stride Length","Fields":[{"Field":"NumberField","Placeholder":"(integer)","Value":5}]},{"Var":"padding","Name":"Padding","Fields":[{"Field":"SelectField","Choices":["same","valid"],"Value":"same"}]}],"layer":5},{"type":"Dropout","name":"drop","comments":"Rate 0.0 Dropout","rate":0,"training":1,"units":1024,"activation":"ReLU","usebias":true,"reuse":false,"attr":[{"Var":"name","Name":"Name","Fields":[{"Field":"StringField","Placeholder":"Drop - ##","Value":"drop"}]},{"Var":"comments","Name":"Comments","Fields":[{"Field":"StringField","Placeholder":"(optional)","Value":null}]},{"Var":"rate","Name":"Rate","Fields":[{"Field":"NumberField","Placeholder":"(decimal)","Value":0}]},{"Var":"training","Name":"Training","Fields":[{"Field":"BooleanField","Value":1}]},{"Var":"units","Name":"Units","Fields":[{"Field":"NumberField","Placeholder":"(integer)","Value":1024}]},{"Var":"activation","Name":"Activation","Fields":[{"Field":"SelectField","Choices":["ReLU","ReLU6","CReLU","ExpLU","SoftPlus","SoftSign","Sigmoid","Tanh"],"Value":"ReLU"}]},{"Var":"usebias","Name":"Use Bias","Fields":[{"Field":"BooleanField","Value":true}]},{"Var":"reuse","Name":"Reuse","Fields":[{"Field":"BooleanField","Value":false}]}],"layer":6},{"type":"Output","name":"out","comments":"10 Classes","units":10,"attr":[{"Var":"name","Name":"Name","Fields":[{"Field":"StringField","Value":"out"}]},{"Var":"comments","Name":"Comments","Fields":[{"Field":"StringField","Placeholder":"(optional)","Value":null}]},{"Var":"units","Name":"Units","Fields":[{"Field":"NumberField","Placeholder":"(integer)","Value":10}]}],"layer":7}]';
+			localStorage.optimizer  = '{"type":"grad","rate":0.001,"attr":[{"Var":"name","Name":"Name","Fields":[{"Field":"StringField","Value":"GradientDescent"}]},{"Var":"rate","Name":"Learning Rate","Fields":[{"Field":"NumberField","Placeholder":"(decimal)"}]},{"Var":"locking","Name":"Use Locking","Fields":[{"Field":"BooleanField"}]}]}';
+			localStorage.project    = 'My MNIST';
+			localStorage.input_sz	= '2D';
+			localStorage.loss		= 'softmax';
+			localStorage.batchsz	= '100';
+			localStorage.steps		= '1';
+			localStorage.shuffle	= 'true';			
+			break;
+
+		default:
+			localStorage.removeItem('all_layers');
+			localStorage.removeItem('optimizer');
+
+	}
+	window.location.href = '/';
+}
+
+

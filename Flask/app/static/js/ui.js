@@ -1,16 +1,13 @@
 
-var layers = [
-  new InputLayer(name="Input"),
-];
 
-var optimizer = newOptimizer('grad');
-if (localStorage.optimizer != undefined)
-    var optimizer = JSON.parse(localStorage.optimizer);
+// Load any saved/default items
+var all_layers = (localStorage.all_layers != undefined ? JSON.parse(localStorage.all_layers) : []);
+var optimizer = (localStorage.optimizer != undefined ? JSON.parse(localStorage.optimizer) : newOptimizer('grad') );
+$(document).ready(LoadNetwork);
+var layers = [ newLayer('Input') ];
 
 
 $(build_list);
-
-
 $(function() {
   $('submit').bind('click', submit_layers);
 });
@@ -35,6 +32,87 @@ $(function() {
   });
 });
 
+
+function build_list() {
+
+  var container = d3.select("td#layers");
+  container.selectAll("*").remove();
+
+  Array.prototype.forEach.call(layers, function(layer) {
+
+    var tbl = container.append("p").append("table");
+
+    var obj = tbl.append("tr");
+    obj.append("td").text("Type:");
+    var select = obj.append("td")
+        .append("select")
+        .attr('id','layers');        
+    select.selectAll("option")
+        .data(LayerTypes)
+        .enter()
+        .append("option")           
+        .text(function(d){return d;});
+    select.on('change', function(d=layer) {
+      var index = layers.findIndex(function(f) {return f==layer;});
+      layers[index] = newLayer(this.options[this.selectedIndex].value,+$("#InputSize").val().slice(0,1));
+      build_list();
+    });
+
+    if (layer!=null) {
+      select.property('value',layer.type);
+
+      Array.prototype.forEach.call(layer.attr, function(param) {
+        parse_params(tbl.append("tr"),param,layer);
+      });                 
+
+      var tr = tbl.append('tr');
+          tr.append('td')
+            .attr('align','left')
+            .append('button')
+            .classed('btn-layer',true)
+            .attr('type','button')        
+            .attr('id','add_layer')
+            .text('Add')
+            .on('click',d => add_layer(layer));
+
+          tr.append('td')
+            .attr('align','left')
+            .append('button')  
+            .classed('btn-layer',true)      
+            .attr('type','button')
+            .attr('id','clear_layer')
+            .text('Clear')
+            .on('click',d => clear_layer(layer));
+    }
+  });
+  reset_height();
+}
+
+clear_layer = function(layer) {  
+  var index = layers.findIndex(function(f) {return f==layer;});
+  layers[index] = newLayer(layer.type,+$("#InputSize").val().slice(0,1));
+  localStorage.removeItem("all_layers");
+  localStorage.removeItem("optimizer");  
+  build_list();
+}
+
+add_layer = function(layer) {
+  if (validate(layer)){
+    var  new_layer = newLayer(layer.type,+$("#InputSize").val().slice(0,1),layer);
+    new_layer['layer'] = all_layers.length+1;
+    delete new_layer.Fields;
+    all_layers.push(new_layer);
+    set_layers('#network-arch',all_layers);
+    var index = layers.findIndex(function(f) {return f==layer;});
+    layers[index] = newLayer(layer.type,+$("#InputSize").val().slice(0,1));
+    build_list();
+  }else{
+    d3.select('td#layers').select('table')
+      .append('tr').append('td').append('td')
+      .append("text").classed("txt-err",true)
+      .text("Error, check values and try again!")
+  }
+}
 
 function parse_params(obj,param,value) {
      /* Parses the request from /_get_params
@@ -123,83 +201,3 @@ function parse_params(obj,param,value) {
 
     });
   }
-
-function build_list() {
-
-  var container = d3.select("td#layers");
-  container.selectAll("*").remove();
-
-  Array.prototype.forEach.call(layers, function(layer) {
-
-    var tbl = container.append("p").append("table");
-
-    var obj = tbl.append("tr");
-    obj.append("td").text("Type:");
-    var select = obj.append("td")
-        .append("select")
-        .attr('id','layers');        
-    select.selectAll("option")
-        .data(LayerTypes)
-        .enter()
-        .append("option")           
-        .text(function(d){return d;});
-    select.on('change', function(d=layer) {
-      var index = layers.findIndex(function(f) {return f==layer;});
-      layers[index] = newLayer(this.options[this.selectedIndex].value,+$("#InputSize").val().slice(0,1));
-      build_list();
-    });
-
-    if (layer!=null) {
-      select.property('value',layer.type);
-
-      Array.prototype.forEach.call(layer.attr, function(param) {
-        parse_params(tbl.append("tr"),param,layer);
-      });                 
-
-      var tr = tbl.append('tr');
-          tr.append('td')
-            .attr('align','left')
-            .append('button')
-            .classed('btn-layer',true)
-            .attr('type','button')        
-            .attr('id','add_layer')
-            .text('Add')
-            .on('click',d => add_layer(layer));
-
-          tr.append('td')
-            .attr('align','left')
-            .append('button')  
-            .classed('btn-layer',true)      
-            .attr('type','button')
-            .attr('id','clear_layer')
-            .text('Clear')
-            .on('click',d => clear_layer(layer));
-    }
-  });
-}
-
-clear_layer = function(layer) {  
-  var index = layers.findIndex(function(f) {return f==layer;});
-  layers[index] = newLayer(layer.type,+$("#InputSize").val().slice(0,1));
-  localStorage.removeItem("all_layers");
-  localStorage.removeItem("optimizer");  
-  build_list();
-}
-
-add_layer = function(layer) {
-  if (validate(layer)){
-    var  new_layer = newLayer(layer.type,+$("#InputSize").val().slice(0,1),layer);
-    new_layer['layer'] = all_layers.length+1;
-    delete new_layer.Fields;
-    all_layers.push(new_layer);
-    set_layers('#network-arch',all_layers);
-    var index = layers.findIndex(function(f) {return f==layer;});
-    layers[index] = newLayer(layer.type,+$("#InputSize").val().slice(0,1));
-    build_list();
-  }else{
-    d3.select('td#layers').select('table')
-      .append('tr').append('td').append('td')
-      .append("text").classed("txt-err",true)
-      .text("Error, check values and try again!")
-  }
-}
