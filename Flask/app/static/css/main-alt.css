@@ -1,0 +1,54 @@
+body {
+	background: url(../img/splash3.jpg);
+	background-size: cover;
+}
+
+div.header {
+    text-align: center;
+    margin-left: 25%;
+    margin-right: 25%;
+    padding: 10px;
+    border-radius: 20px;
+    background: linear-gradient(#b7b4b8db,#7e7c7f,#7b7878d4);
+    border: 2px inset #aea9a9f5;
+}
+
+h3 {
+	color: #f28831;
+	font-size: 64px;
+	font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+    text-shadow: 3px -1px #ffb600, -1px 5px 14px #b24721, -2px 10px 16px #000000d9; 
+}
+ 
+p {
+	margin: 0 0 10px;
+    color: #e2edfe;
+    font-style: oblique;
+    font-size: 16px;
+    font-family: fantasy;
+    text-shadow: -1px -1px #0a1c4c;
+    padding-top: 5px;
+}
+
+div.login {
+	text-align: center;
+    margin-left: 25%;
+    margin-right: 25%;
+	margin-top: 10px;
+	border-radius: 20px;
+}
+
+input {
+	background: #5e67dd4f;
+	border-radius: 10px;
+    width: 60%;
+    margin-right: 10px;
+}
+
+button {
+    color: #99f7fcde;
+	background: #31314dcc;
+	border-radius: 6px;
+	width: 25%;
+}
+

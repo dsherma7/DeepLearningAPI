@@ -12,6 +12,7 @@ div.main {
     background-color: #f9f9f9b8;
     background: linear-gradient(#fff8f8ba,#d5d5d5cf);
     min-width: 390px;
+    margin-bottom: 0px;
 }
 
 .table-striped > tbody > tr:nth-of-type(odd) {
@@ -29,16 +30,20 @@ tr.advanced {
     color: #514f4f;
 }
 
-div.msg {
+#message-row {
 	padding-left: 20px;
 } 
 
-h3.msg-good {
+.msg-good {
 	color: #88d8f0;
+	font-size: 20px;
+    font-style: oblique;
 }
 
-h3.msg-bad {
+.msg-bad {
 	color: #c442fa;
+	font-size: 20px;
+    font-style: oblique;
 }
 
 i.expand {

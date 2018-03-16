@@ -1,11 +1,15 @@
 <!-- extend base layout -->
 {% extends "base.html" %}
 {% block content %}
+
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">        
-<!-- Login Form -->
-<link href=static/css/login.css rel="stylesheet">
+    <!-- Javascript files -->    
+    <script src="static/js/util.js" ></script> 
+    <script src="static/js/ui.js" ></script> 
+    <!-- Style -->
+    <link href="static/css/buildjob.css" rel="stylesheet">  
 </head>
+
 <nav class="navbar navbar-default navbar-inverse" role="navigation">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -23,7 +27,7 @@
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
         <li><a href="/home">Dashboard</a></li>
-        <li><a href="/build">Build New</a></li>
+        <li class="active"><a href="/">Build New</a></li>
         <li><a href="/status">Job Status</a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Job Templates <span class="caret"></span></a>
@@ -91,39 +95,97 @@
   </div><!-- /.container-fluid -->
 </nav>
 
-<form action="#">
-    {{ form.csrf_token }} 
-    <div class="imgcontainer">
-        <!-- <img src="img_avatar2.png" alt="Avatar" class="avatar"> -->
-    </div>  
-    <div class="container">
-    <div class="col-sm-2"></div>
-    <div class="col-sm-8 main-form">
-        <label for="uname"><b>Username</b></label>    
-        <input type="text" placeholder="Enter Username" name="uname" id="uname" required>
-        <p for="uname" class="error" id="uname-err"></p>    
+<form action="#" method="post" name="Sub" enctype=multipart/form-data class="invis">
+{{ form.csrf_token }}
+{{ form.name }}
+<div class="col-lg-12 invis" >
+<div class="panel panel-default main">
+<div class="panel-body">
+    <div class="col-md-7" id="form">
+	<table class="table table-striped">	                
+        <tr>
+            <th>Project:</th>
+            <td>{{ form.Name }}<br>
+            	<!-- Error Handling -->
+                {% for error in form.Name.errors %} 
+                    <small><span style="color: red;">[{{ error }}]</span></small>
+                {% endfor %}
+            </td>
+        </tr>        
+        <tr>
+            <th>Input Size:</th>
+            <td>{{ form.InputSize }}</td>
+        </tr>
+        <tr>
+            <th>Add Layer:</th>
+            <td id="layers">
 
-        <label for="email"><b>Email</b></label>    
-        <input type="text" placeholder="email@domain.com" name="email" id="email" required>
-        
-        <label for="psw"><b>Password</b></label>
-        <input type="password" placeholder="Enter Password" name="psw" id="psw" required>
-        
-        <label for="cpsw"><b>Confirm Password</b></label>
-        <input type="password" placeholder="Confirm Password" name="cpsw" id="cpsw" required>        
-        <p for="cpsw" class="error" id="cpsw-err"></p>    
+            </td>            
+        </tr>
+        <tr>
+            <th>Comments:</th>
+            <td>{{ form.Comments }}<br>
+                {% for error in form.Comments.errors %} 
+                    <small><span style="color: red;">[{{ error }}]</span></small>
+                {% endfor %}
+            </td>
+        </tr>           
+    </table>    
+    <i class="fa fa-caret-down expand" id="expand-advanced"> Advanced </i>
+    <table class="table table-striped expand" style="display:none;">
+        <tr>
+            <th>Loss Function:</th>
+            <td>{{ form.LossFunct }}</td>
+        </tr>
+        <tr>
+            <th>Optimizer:</th>
+            <td id="opts">
+                {{ form.Optimizer }}<br>
+                {% for error in form.Optimizer.errors %}
+                    <small><span style="color: red;">[{{ error }}]</span></small>
+                {% endfor %}
+            </td>
+        </tr> 
+        <tr>
+            <th> Batch Size </th>
+            <td> {{ form.Batch_Size }} </td>
+        </tr>
+        <tr>
+            <th> Shuffle Batch ?</th>
+            <td> {{ form.Shuffle }} </td>
+        </tr>
+        <tr>
+            <th> Training Steps </th>
+            <td> {{ form.Train_Steps}} </td>
+        </tr>        
+    </table>
+    <i class="fa fa-caret-up expand" id="collapse-advanced" style="display:none;"> Advanced </i>   
 
-        <button type="button" id="signup" name="signup">Sign Up</button>
-        <p for="signup" class="error" id="signup-err"></p>  
-        <label><input type="checkbox" checked="checked" id="remember"> Remember me </label>        
-
-        <div class="row btn-row">
-        <button type="button" class="cancelbtn" onclick="window.location.href='.'" href="/status">Cancel</button>
-        <span class="psw">Have an account? <a href="/login">Login</a></span>
-        </div>
+    <div class='row'>                        		
+        <div class='col-sm-6' align='center' id="arch"> 
+            <!-- <input  type="submit" name="submit" value="Submit" onclick="submit_layers();"></button> -->
+            <button  type="button" name="submit" onclick="submit_layers();" id="submit">Submit</button>                       
+        </div><!-- Submit Button -->                	
+        <div class='col-sm-6' align='center'> 
+            <input type="button" value="Clear" onclick="Clear();" data-toggle="tooltip"  data-placement="right" title="Resets all elements to their default values.">
+        </div><!-- Reset Button -->       
+        <br>
+    </div> <!-- row (submit) -->
+</div>
+<div class="col-md-5" id="tbl-col">    
+    <div id="network-arch"></div>    
+    <div class="well toolbar">
+        <div class="col-md-4"><i class="fa fa-edit" id="tool-edit"><span class="toolbar">Edit</span></i></div>
+        <div class="col-md-4"><i class="fa fa-plus-circle" id="tool-copy"><span class="toolbar">Copy</span></i></div>
+        <div class="col-md-4"><i class="fa fa-trash" id="tool-delete"><span class="toolbar">Delete</span></i></div>        
     </div>
-    <div class="col-sm-2"></div>
-    </div>   
-</form>
-<script type="text/javascript" src="static/js/signup.js"></script>
+</div>
+</div>
+
+</div> <!-- Panel-Body -->
+</div> <!-- panel-default -->
+</div> <!-- <div> col-lg-12 -->	        	        
+</form>    
+
+<script src="static/js/layers.js"></script> 
 {% endblock %}

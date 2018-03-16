@@ -14,7 +14,7 @@ div.btn-row {
 
 p.error {
     display: none;
-    color: #a538b2;
+    color: #cf0606;
     font: italic 12px arial;
 }
 
@@ -29,8 +29,8 @@ input[type=text], input[type=password] {
 }
 
 button {
-    background-color: #1866ad;
-    background: linear-gradient(#1461a8,#532b8b);
+    background-color: #081119;
+    background: linear-gradient(#1461a8,black,black,#FCB965);
     color: white;
     padding: 14px 20px;
     margin: 8px 0;

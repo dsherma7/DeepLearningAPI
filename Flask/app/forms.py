@@ -17,7 +17,7 @@ Components:
 Activations = ["ReLU","ReLU6","CReLU","ExpLU","SoftPlus","SoftSign","Sigmoid","Tanh"]
 Paddings = ["Valid","Same"]
 
-class MainForm(FlaskForm):
+class BuildForm(FlaskForm):
     '''
     Generates Substitute form. Note: PlateType not displyed
     '''
@@ -62,4 +62,9 @@ class SignUpForm(FlaskForm):
 class HomeForm(FlaskForm):
     '''
     Generates the Home Page Form. Also, no WTF elements are used
+    '''      
+class MainForm(FlaskForm):
+    '''
+    Generates the Home Page Form. Also, no WTF elements are used
     '''        
+    Login = StringField('Login', validators=[DataRequired("Log In to Continue!")])

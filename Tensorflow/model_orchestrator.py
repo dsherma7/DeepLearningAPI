@@ -39,9 +39,10 @@ def predict(username, job, data_set_type):
         out.append(i)
     return out
 
-def create_network(username, job):
+def create_network(username, job,params):    
     us.create_user_space(username, job)
-    params = us.get_architecture(username, job)
+    if not params:
+        params = us.get_architecture(username, job)
     print('create network')
     net.Network(username,job,params=params)
 

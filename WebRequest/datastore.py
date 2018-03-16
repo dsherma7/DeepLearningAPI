@@ -69,7 +69,7 @@ def add_job(params):
 	'''			
 	params = flatten(params)
 	user = params['user']
-	job = helper.parse_JobId(get_next_jobid(user))
+	job = helper.parse_JobId(params['job'])
 	task_key = client.key('jobs', user+job)
 	task = datastore.Entity(key=task_key)	
 	for key in params:

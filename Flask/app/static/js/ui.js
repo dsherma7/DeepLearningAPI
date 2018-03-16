@@ -1,17 +1,14 @@
 
-
 // Load any saved/default items
 var all_layers = (localStorage.all_layers != undefined ? JSON.parse(localStorage.all_layers) : []);
 var optimizer = (localStorage.optimizer != undefined ? JSON.parse(localStorage.optimizer) : newOptimizer('grad') );
 $(document).ready(LoadNetwork);
 var layers = [ newLayer('Input') ];
+// For the Clear btn
+Clear = function() { ClearNetwork(); document.location='/build'; }
 
 
 $(build_list);
-$(function() {
-  $('submit').bind('click', submit_layers);
-});
-
 $(function() {
   $('select#Optimizer').bind('change', function() {
 

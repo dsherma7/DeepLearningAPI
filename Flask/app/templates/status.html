@@ -17,14 +17,14 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="/home">DeepAPI</a>
+      <a class="navbar-brand" href="/">T<span class="orange">F</span></a>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
-        <li><a href="/login">Login</a></li>
-        <li><a href="/">Build New</a></li>
+        <li><a href="/home">Dashboard</a></li>
+        <li><a href="/build">Build New</a></li>
         <li class="active"><a href="/status">Job Status</a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Job Templates <span class="caret"></span></a>
@@ -71,7 +71,7 @@
                                              <div class="help-block text-right"><a href="">Forget your password ?</a></div>
                                         </div>
                                         <div class="form-group">
-                                             <button type="button" class="btn btn-primary btn-block" id="btn-login">Sign in</button>
+                                             <button type="button" class="btn btn-primary btn-block" id="btn-login" data-toggle="dropdown">Sign in</button>
                                         </div>
                                         <div class="checkbox">
                                              <label>
@@ -103,9 +103,9 @@
     </div>
       
     <div class="col-md-3 buttons" align="left">
-      <button name="Train" id="btn-train" type="button" class="depend"><i class="fa fa-cog"></i> Train</button>
-      <button name="Test"  id="btn-test"  type="button" class="depend"><i class="fa fa-info-circle"></i> Test</button>      
+      <button name="Train" id="btn-train" type="button" class="depend"><i class="fa fa-cog"></i> Train</button>      
       <button name="Evaluate"  id="btn-eval"  type="button" class="depend"><i class="fa fa-question-circle"></i> Eval</button>
+      <button name="Test"  id="btn-test"  type="button" class="depend"><i class="fa fa-info-circle"></i> Predict</button>      
     </div>
 
     <div class="col-md-4" style="text-align:right; padding-right:10px;">
@@ -145,21 +145,6 @@
     </div>        
 </div>
 </form>
-
-<div class="row" id="message-row">
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul id="messages">
-                {% for message in messages %}
-                    <h4><font color='blue'>{{ message }} </font></h4>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-  </div> <!-- Header -->
-
-
-
 
 <script src="static/js/status.js"></script>
 

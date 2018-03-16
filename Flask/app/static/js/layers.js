@@ -1,5 +1,4 @@
 
-
 // Toggle the advanced params 
 $("#expand-advanced").bind("click",function(){    
     var display = d3.select("table.expand").style('display')
@@ -114,6 +113,8 @@ format_layers = function(layers) {
 }
 
 submit_layers = function() {
+    d3.select("#submit").node().onclick = function(){}
+    AddLoadingBar();
     StoreNetwork();
     new_layers = all_layers.slice();
     new_layers = format_layers(new_layers);    
@@ -126,14 +127,17 @@ submit_layers = function() {
             console.log(url)
             console.log(response)
             response = JSON.parse(response).out
+            Kill_Loading();
             if (response.status == 200){
-                d3.select("div.msg").append("h3").classed("msg-good",true).text("Job submitted as "+response.job)
+                d3.select("#message-row").append("font").classed("msg-good",true).text("Job submitted as "+response.job)
             }else{
-                d3.select("div.msg").append("h3").classed("msg-bad",true).text("Job submission failed!")
-            }
+                d3.select("#message-row").append("font").classed("msg-bad",true).text("Job submission failed!");
+            }            
+            d3.select("#message-row").selectAll("font").transition().duration(6000).ease(d3.easeBack)
+              .style("opacity",0).on("end",function(){ d3.select(this).remove(); window.location.href = "."; });            
         });
     }else{
-
+        
     }
 }
 

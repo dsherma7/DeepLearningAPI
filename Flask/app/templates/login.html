@@ -7,18 +7,6 @@
 <link href=static/css/login.css rel="stylesheet">
 
 </head>
-<div class="row">
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <h4><font color='blue'>{{ message }} </font></h4>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
-</div> <!-- Header -->
-
 <nav class="navbar navbar-default navbar-inverse" role="navigation">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
@@ -29,14 +17,14 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="/home">DeepAPI</a>
+      <a class="navbar-brand" href="/">T<span class="orange">F</span></a>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
         <li class="active"><a href="/login">Login</a></li>
-        <li><a href="/">Build New</a></li>
+        <li><a href="/build">Build New</a></li>
         <li><a href="/status">Job Status</a></li>
         <li class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown">Job Templates <span class="caret"></span></a>
@@ -83,7 +71,7 @@
                                              <div class="help-block text-right"><a href="">Forget your password ?</a></div>
                                         </div>
                                         <div class="form-group">
-                                             <button type="button" class="btn btn-primary btn-block" id="btn-login">Sign in</button>
+                                             <button type="button" class="btn btn-primary btn-block" id="btn-login" data-toggle="dropdown">Sign in</button>
                                         </div>
                                         <div class="checkbox">
                                              <label>

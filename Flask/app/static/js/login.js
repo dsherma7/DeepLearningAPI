@@ -1,5 +1,5 @@
 
 End = function() {
     SetStorage(d3.select('#remember').property('checked'));
-    window.location.href = '/status';
+    window.location.href = '/home';
 }

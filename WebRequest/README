@@ -1,5 +1,0 @@
-Place files related to web requests between Flask UI and Tensorflow scripts
-
-run pip -r requirements.txt to install dependencies
-
-run export GOOGLE_APPLICATION_CREDENTIALS="[Path to this dir]/data-store-authentication.json" to set credentials

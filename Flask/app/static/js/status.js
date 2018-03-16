@@ -1,5 +1,18 @@
 // Re-build table on username change
-$("#btn-login").bind("click",function(){
+var oldVal = "";
+function Observe(){
+    if($("#dd-login").text() != oldVal){
+     $("#dd-login").trigger('change');
+    }
+    oldVal = $("#dd-login").text();
+}
+$(function(){ setInterval(Observe,500);})
+$("#dd-login").change(function () {
+    $(this).change(function () {
+        update();
+    });
+});
+function update(){
     SetStorage(d3.select('#nav-remember').property('checked'));
     user = localStorage.username;
     var client = new HttpClient();
@@ -8,7 +21,7 @@ $("#btn-login").bind("click",function(){
     });    
     $("#username").val(localStorage.username);
     $("#example-table").tabulator("setFilter", "status", "!=", "archived");
-});
+}
 
 // Archive a job
 archive = function(){
@@ -19,6 +32,7 @@ archive = function(){
     var url = "_archive?user=" + user + "&job=" + job;
     client.get(url, function(response) { 
         response = JSON.parse(response);
+        $("#dd-login").trigger('change');
         if (response.status != STATUS_OK)
             $.alert("Returned error code: "+response.code,"Archive Failed")
     });
@@ -73,11 +87,6 @@ NoJob = function(){
     })
 }
 
-Kill_Loading = function(){
-    d3.selectAll(".loader").transition();
-    d3.selectAll(".loader").remove();
-}
-
 Attach_Data = function(user,job,type,selectVal) {
     $.confirm({
         theme: "modern",
@@ -92,47 +101,81 @@ Attach_Data = function(user,job,type,selectVal) {
                 action:function(){                                        
                     var url = "/_"+type.toLowerCase()+"?user=" + user + "&job=" + job +"&datatype=" + selectVal;                                        
                     var client = new HttpClient();
-                    // Loading bar
-                    d3.select("#message-row").append("div").classed("loader",true);
-                    d3.select("#message-row").append("i").classed("loader",true).text("Loading ......");
-                    d3.select(".loader").transition().duration(60000).style("opacity",0).on("end",function(){ 
-                        $.alert("Failed"); d3.selectAll(".loader").remove();
-                    });                    
+                    AddLoadingBar();                    
                     client.get(url, function(response) { 
-                        if (type == 'Train'){
-                            $.alert(JSON.parse(response).msg);
-                            Kill_Loading();
-                        }else if (type == 'Test'){
-                            response = JSON.parse(response);
-                            var csvContent = "";
-                            var preds = response.probs, classes = response.classes;
-                            // Build Header
-                            csvContent += "Prediction,";
-                            for (var i=0; i<preds[0].length; i++){
-                                csvContent += "Prob_"+i;
-                                if (i < preds[0].length-1)
-                                    csvContent += ",";
+                        response = JSON.parse(response);
+                        if (response.status == STATUS_OK){
+                            if (type == 'Train'){
+                                $.alert({
+                                    theme:"modern",                                
+                                    title: 'Training Complete',
+                                    content: response.msg,
+                                    buttons: {
+                                        ok: {
+                                            keys: ['enter', 'esc']
+                                        }
+                                    } 
+                                });
+                                Kill_Loading();
+                            }else if (type == 'Test'){                            
+                                var csvContent = "";
+                                var preds = response.probs, classes = response.classes;
+                                // Build Header
+                                csvContent += "Prediction,";
+                                for (var i=0; i<preds[0].length; i++){
+                                    csvContent += "Prob_"+i;
+                                    if (i < preds[0].length-1)
+                                        csvContent += ",";
+                                }
+                                csvContent += "\n";
+                                // Builds remaining rows
+                                for (var i=0; i<classes.length; i++){
+                                    csvContent += classes[i]+","+preds[i].join(",")+"\n";
+                                }
+                                // Download as CSV                            
+                                SaveCSV(csvContent,job+"_"+selectVal+".csv");                                                                                      
+                                Kill_Loading();
+                            }else if (type == 'Evaluate'){
+                                var evals = response.evals;
+                                var evals_txt = "<div class='evals'>" + "<b>Data:</b>" + selectVal + "<br>"+ 
+                                                "<b>Accuracy:</b>" + evals.accuracy + "<br>"+
+                                                "<b>Loss:</b>" + evals.loss + "<br>"+
+                                                "<b>Global Step:</b>" + evals.global_step + "</div>";
+                                $.alert({
+                                    theme:"modern",
+                                    title:  "Evaluation of "+job,
+                                    content: evals_txt,
+                                    type: 'blue',
+                                    backgroundDismiss: 'submit',
+                                    buttons: {
+                                        ok: {
+                                            keys: ['enter', 'esc']
+                                        }
+                                    } 
+                                });
+                                Kill_Loading();
+                                
+                            }else {
+                                $.alert({
+                                    theme:"modern",
+                                    type:"red",
+                                    title:"Error!",
+                                    content:"Bad Type specifed!",
+                                    buttons: {
+                                        ok: {
+                                            keys: ['enter', 'esc']
+                                        }
+                                    } 
+                                });
+                                Kill_Loading();
                             }
-                            csvContent += "\n";
-                            // Builds remaining rows
-                            for (var i=0; i<classes.length; i++){
-                                csvContent += classes[i]+","+preds[i].join(",")+"\n";
-                            }
-                            // Download as CSV                            
-                            SaveCSV(csvContent,job+"_"+selectVal+".csv");                                                                                      
-                            Kill_Loading();
-                        }else if (type == 'Evaluate'){
-                            var evals = JSON.parse(response).evals;
-                            var evals_txt = "<div class='evals'>" + "<b>Data:</b>" + selectVal + "<br>"+ 
-                                            "<b>Accuracy:</b>" + evals.accuracy + "<br>"+
-                                            "<b>Loss:</b>" + evals.loss + "<br>"+
-                                            "<b>Global Step:</b>" + evals.global_step + "</div>";
+                            $("#dd-login").trigger('change');                                                   
+                        }else{
                             $.alert({
                                 theme:"modern",
-                                title:  "Evaluation of "+job,
-                                content: evals_txt,
-                                type: 'blue',
-                                backgroundDismiss: 'submit',
+                                type:"red",
+                                title:"Error!",
+                                content:response.msg,
                                 buttons: {
                                     ok: {
                                         keys: ['enter', 'esc']
@@ -140,12 +183,8 @@ Attach_Data = function(user,job,type,selectVal) {
                                 } 
                             });
                             Kill_Loading();
-                            
-                        }else {
-                            $.alert("Bad Type specifed!");
-                            Kill_Loading();
-                        }                                                        
-                    });
+                        }                             
+                    });                       
                 }
             },
             close: function () {                                                    
@@ -217,7 +256,7 @@ TrainTestEval = function(x){
                     }
             });  
         }      
-    });
+    });    
 }
 
 chg_comment = function(cell){
@@ -242,19 +281,17 @@ $("#example-table").tabulator({
     selectable:1,
     placeholder:"No Jobs For User "+localStorage.username,    
     tooltips:true,
-    // pagination:"local", //enable local pagination.
-    // paginationSize:12, 
     initialSort: [
     	{column:"job",dir:"asc"}
     ],
     index:"job",
     columns:[ //Define Table Columns
-        {title:"Job",        field:"job",     align:"center", minWidth:80, frozen:true,response:0},
-        {title:"Project",    field:"project", align:"left",   minWidth:200,response:2},
-        {title:"Submit Date",field:"date",    align:"center", minWidth:120,sorter:"date",response:4},
-        {title:"Progress",   field:"progress",align:"left",   minWidth:80, formatter:"progress",formatterParams:{color:"#6b3399"},response:3},
-        {title:"Status",     field:"status",  align:"center", minWidth:50, sorter:status_sorter,response:1},
-        {title:"Comment",    field:"comment", align:"left",   minWidth:80, cellEdited:chg_comment,editor:true,response:5}        
+        {title:"Job",        field:"job",     align:"center", width:80,    minWidth:80, frozen:true,response:0},
+        {title:"Project",    field:"project", align:"left",   width:"30%", minWidth:200,response:2},
+        {title:"Date",       field:"date",    align:"center", width:"10%", minWidth:120,sorter:"date",response:4},
+        {title:"Progress",   field:"progress",align:"left",   width:"12%", minWidth:80, formatter:"progress",formatterParams:{color:"#48A7F1"},response:3},
+        {title:"Status",     field:"status",  align:"center", width:"10%", minWidth:50, sorter:status_sorter,response:1},
+        {title:"Comment",    field:"comment", align:"left",                minWidth:80, cellEdited:chg_comment,editor:true,response:5}        
     ],
     rowSelected:function(row){
         $("#selected").val( JSON.stringify(row.getData()))

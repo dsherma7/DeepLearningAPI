@@ -14,10 +14,55 @@ function SetObjects(){
     d3.select("#dd-login").text(login)
 }    
 
-$("#btn-login").bind('click',function(){
+function Sign() {
+    if (localStorage.username != undefined){
+        SignOut();
+    }else{
+        SignIn();
+    }
+}
+
+function as_SignOut() {
+    d3.select("#login-dp")
+      .selectAll(".form-group")
+      .filter(function(d){
+        return d3.select(this).select("button").nodes().length == 0;
+    }).style('display','none');
+    $("#btn-login").text("Sign Out");    
+}
+function as_SignIn() {
+    d3.select("#login-dp")
+      .selectAll(".form-group")
+      .filter(function(d){
+        return d3.select(this).select("button").nodes().length == 0;
+    }).style('display','');
+    $("#btn-login").text("Sign In");    
+}
+
+function SignIn() {
     var bool = $("#remember").val() != undefined ? d3.select("#remember").property("checked") : d3.select("#nav-remember").property("checked")
     SetStorage(bool);
     SetObjects();
+    d3.select("#dd-login").classed("pulse",true).transition().duration(1200).on('end',function(){d3.select(this).classed('pulse',false)});
+    as_SignOut();    
+}
+
+function SignOut() {
+    localStorage.removeItem('username');
+    localStorage.removeItem('password');
+    localStorage.removeItem('email');
+    SetObjects();
+    as_SignIn();
+}
+
+$(function(){
+    $("#btn-login").bind("click",Sign);
+    if (localStorage.username != undefined){
+        as_SignOut();
+        SetObjects();
+    }else{
+        as_SignIn();
+    }
 });
 
 // Update Local Storage
@@ -60,4 +105,15 @@ LoadNetwork = function() {
   $("#Batch_Size").val(localStorage.batchsz ? localStorage.batchsz : 100);  
   $("#Train_Steps").val(localStorage.steps ? localStorage.steps : 1 );
   $("#Shuffle").prop("checked",(localStorage.shuffle ? JSON.parse(localStorage.shuffle) : true));
+}
+ClearNetwork = function() {
+  localStorage.removeItem('all_layers');
+  localStorage.removeItem('optimizer');
+  localStorage.removeItem('project');
+  localStorage.removeItem('comments');
+  localStorage.removeItem('input_sz');
+  localStorage.removeItem('loss');
+  localStorage.removeItem('batchsz');
+  localStorage.removeItem('steps');
+  localStorage.removeItem('shuffle');
 }
