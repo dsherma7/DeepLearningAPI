@@ -106,8 +106,13 @@ def signup():
 # 		Web Request Functions
 #############################################
 
-@app.route('/_submit_layers', methods=['GET','POST'])
+@app.route('/_submit_layers', methods=['PUT','POST','GET'])
 def submit_layers():	
+	if request.method == 'POST':
+		var = request.get_json()
+		print(divider+str(var)+divider)
+		print(divider+str(request.args)+divider)
+		return Response(json.dumps(var))
 	# Get the params passed as Lists/Dicts
 	exec("layers =" + str(request.args.get('layers', 0, type=str)),globals())	
 	exec("optimizer =" + str(request.args.get('optimizer', 0, type=str)),globals())	

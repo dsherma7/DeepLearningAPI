@@ -38,7 +38,6 @@ archive = function(){
     });
 }
 
-
 // Upper Toolbar
 check_archived = function(){
     if (d3.select("#ck-archived").node().checked){

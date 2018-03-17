@@ -1,27 +1,7 @@
+/**********************************
+* Main Tabulator table for layers *
+***********************************/
 
-// Toggle the advanced params 
-$("#expand-advanced").bind("click",function(){    
-    var display = d3.select("table.expand").style('display')
-    d3.select("table.expand").style('display',(display == "none" ? "table": "none"));
-    d3.select('#expand-advanced').style('display','none');
-    d3.select('#collapse-advanced').style('display','table');
-    reset_height();
-});
-$("#collapse-advanced").bind("click",function(){
-    var display = d3.select("table.expand").style('display')
-    d3.select("table.expand").style('display',(display == "none" ? "table": "none"));
-    d3.select('#expand-advanced').style('display','table');
-    d3.select('#collapse-advanced').style('display','none');
-    reset_height();
-});
-
-reset_height = function(){
-    $("#network-arch").tabulator("setHeight",300);
-    var newHeight = d3.select("#tbl-col").node().getBoundingClientRect().height-60;
-    $("#network-arch").tabulator("setHeight",newHeight);
-}
-
-// Main Layer table
 $("#network-arch").tabulator({
     height:300, 
     layout:"fitColumns", 
@@ -52,94 +32,20 @@ $("#network-arch").tabulator({
 
 });
 
-edit_layer = function(e,cell){
+function edit_layer(e,cell){
     all_layers = $("#network-arch").tabulator("getData");
     set_layers("#network-arch",all_layers);
 }
 
-set_layers = function(id,data){
+function set_layers(id,data){
     $(id).tabulator("setData", data);
 }
 set_layers("#network-arch",all_layers);
 
 
-function validate(layer) {
-    // Add some validation for a single layer
-    var current_layers = $("#network-arch").tabulator("getData");
-    if (current_layers.filter(d => d.name == layer.name).length > 0)
-        return false;
-    return true;
-}
-
-validate_form = function() {
-    // Validate the rest of the form
-    return true;
-}
-
-remove_bads = function(str) {
-    var bads = {"##":"[num]","#":"num","%":"percent","&":"and"}
-    for (var key in bads){
-        var re = new RegExp(key,"g");
-        str = str.replace(re,bads[key])    
-    }       
-    return str;
-}
-
-get_other_params = function() {
-    
-    var dict = {
-        "name"    :  d3.select("#Name").property('value'),
-        "comments":  d3.select("#Comments").property('value'),
-        "input"   :  d3.select("#InputSize").property('value'),
-        "loss"    :  d3.select("#LossFunct").property('value'),
-        "batchsz" : +d3.select("#Batch_Size").property('value'),
-        "shuffle" : +d3.select("#Shuffle").property('checked'),
-        "steps"   : +d3.select("#Train_Steps").property('value'),
-        "user"    : localStorage.username
-    }
-    var url = ""
-    for (var key in dict)
-        url += "&" + key + "=" + dict[key];
-    return url;
-}
-
-format_layers = function(layers) {
-    layers.filter(d => d.type == "Input").forEach(d => d.shape = [-1].concat(d.shape).concat([d.channels]))
-    layers.forEach(d => d.type = LayerMap[d.type]);
-    layers.filter(d => d.activation).forEach(d => d.activation = d.activation.toLowerCase())
-
-    // More as needed
-    return layers;
-}
-
-submit_layers = function() {
-    d3.select("#submit").node().onclick = function(){}
-    AddLoadingBar();
-    StoreNetwork();
-    new_layers = all_layers.slice();
-    new_layers = format_layers(new_layers);    
-    if (validate_form) {        
-        var client = new HttpClient();
-        var url  = '/_submit_layers?layers='+remove_bads(JSON.stringify(new_layers));
-            url += '&optimizer='+remove_bads(JSON.stringify(optimizer));
-            url += get_other_params();
-        client.get(url, function(response) {
-            console.log(url)
-            console.log(response)
-            response = JSON.parse(response).out
-            Kill_Loading();
-            if (response.status == 200){
-                d3.select("#message-row").append("font").classed("msg-good",true).text("Job submitted as "+response.job)
-            }else{
-                d3.select("#message-row").append("font").classed("msg-bad",true).text("Job submission failed!");
-            }            
-            d3.select("#message-row").selectAll("font").transition().duration(6000).ease(d3.easeBack)
-              .style("opacity",0).on("end",function(){ d3.select(this).remove(); window.location.href = "."; });            
-        });
-    }else{
-        
-    }
-}
+/*********************************
+* Bottom toolbar for Layer Table *
+**********************************/
 
 // Lower toolbar events for table
 $("#tool-edit").bind("click",function(){
@@ -175,5 +81,92 @@ $("#tool-delete").bind("click",function(){
     var cnt=1; all_layers.forEach(d => d.layer = cnt++);
     set_layers("#network-arch",all_layers);
 })
+
+/*****************************
+* Sends Job Info to back-end *
+******************************/
+
+submit_layers = function() {
+    /*
+        Main function for sending job information
+        to back-end. Pulls the information from the
+        layer table and from the remaining form.
+    */    
+    AddLoadingBar();
+    StoreNetwork();    
+    if (validate_form) {        
+        var client = new HttpClient();        
+        var url  = '/_submit_layers?' + get_all_params();            
+        client.get(url, function(response) {
+            response = JSON.parse(response).out            
+            if (response.status == 200){
+                d3.select("#message-row").append("font").classed("msg-good",true).text("Job submitted as "+response.job)
+            }else{
+                d3.select("#message-row").append("font").classed("msg-bad",true).text("Job submission failed!");
+            }            
+            d3.select("#message-row")
+              .selectAll("font").transition().duration(6000).ease(d3.easeBack)
+              .style("opacity",0).on("end",function(){ d3.select(this).remove();});            
+            Kill_Loading();
+        });
+    }else{
+        // Error message
+    }
+}
+
+function get_all_params() {
+    if (validate_form()){
+        var new_layers = all_layers.hard_copy(),
+            new_layers = format_layers(new_layers);
+
+        var layers = 'layers='+remove_bads(JSON.stringify(new_layers)),
+            optim  = 'optimizer='+remove_bads(JSON.stringify(optimizer)),
+            other  = get_other_params();            
+        
+        return [layers,optim,other].join("&");
+    }
+    return undefined;
+
+}
+
+function validate_form() {
+    // Validate the rest of the form
+    return true;
+}
+
+format_layers = function(layers) {
+    layers.filter(d => d.type == "Input").forEach(d => d.shape = [-1].concat(d.shape).concat([d.channels]))
+    layers.forEach(d => d.type = LayerMap[d.type]);
+    layers.filter(d => d.activation).forEach(d => d.activation = d.activation.toLowerCase())
+    // More as needed
+    return layers;
+}
+
+function remove_bads(str) {
+    var bads = {"##":"[num]","#":"num","%":"percent","&":"and"}
+    for (var key in bads){
+        var re = new RegExp(key,"g");
+        str = str.replace(re,bads[key])    
+    }       
+    return str;
+}
+
+get_other_params = function() {
+    
+    var dict = {
+        "name"    :  d3.select("#Name").property('value'),
+        "comments":  d3.select("#Comments").property('value'),
+        "input"   :  d3.select("#InputSize").property('value'),
+        "loss"    :  d3.select("#LossFunct").property('value'),
+        "batchsz" : +d3.select("#Batch_Size").property('value'),
+        "shuffle" : +d3.select("#Shuffle").property('checked'),
+        "steps"   : +d3.select("#Train_Steps").property('value'),
+        "user"    : localStorage.username
+    }
+    var url = ""
+    for (var key in dict)
+        url += "&" + key + "=" + dict[key];
+    return url.slice(1);
+}
 
 
