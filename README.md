@@ -10,8 +10,10 @@ Then navigate to `Flask/` and run
 `python3 run.py` 
 
 ### Contributors: ###
-__Doug Sherman:__ Worked on the Front-End and Middleware in both the `Flask/` and `WebRequest/` directories.
-__Joe Kotlarek:__ Worked on the Front-End the `Flask/` directory.
-__Nick Joodi:__ Worked on the Back-End the `TensorFlow/` directory.
+__Doug Sherman:__ Worked on the Front-End and Middleware in both the [`Flask/`](https://github.com/dsherma7/DeepLearningAPI/tree/master/Flask) and [`WebRequest/`](https://github.com/dsherma7/DeepLearningAPI/tree/master/WebRequest) directories. 
+
+__Joe Kotlarek:__ Worked on the Front-End the [`Flask/`](https://github.com/dsherma7/DeepLearningAPI/tree/master/Flask) directory.
+
+__Nick Joodi:__ Worked on the Back-End the [`TensorFlow/`](https://github.com/dsherma7/DeepLearningAPI/tree/master/Tensorflow) directory.
 
 _See each directory's `README.md` for more information about contributions_

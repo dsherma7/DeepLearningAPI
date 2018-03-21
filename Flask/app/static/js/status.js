@@ -86,7 +86,7 @@ NoJob = function(){
     })
 }
 
-Attach_Data = function(user,job,type,selectVal) {
+Choose_Data = function(user,job,type,selectVal) {
     $.confirm({
         theme: "modern",
         title: 'Confirm '+type,
@@ -242,7 +242,7 @@ TrainTestEval = function(x){
                             btnClass: 'btn-blue',
                             action: function(){
                                 if (selectVal){
-                                    Attach_Data(user,job,type,selectVal);
+                                    Choose_Data(user,job,type,selectVal);
                                 }else{
                                     d3.select("div.jconfirm-box").append("text")
                                       .classed("jconfirm-err",true).text("Error, please select a dataset!");

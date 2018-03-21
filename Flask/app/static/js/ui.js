@@ -219,20 +219,22 @@ Clear = function() {
   document.location='/build'; 
 }
 // "Advanced" job parameters
-$("#expand-advanced").bind("click",function(){    
-    var display = d3.select("table.expand").style('display')
-    d3.select("table.expand").style('display',(display == "none" ? "table": "none"));
-    d3.select('#expand-advanced').style('display','none');
-    d3.select('#collapse-advanced').style('display','table');
-    reset_height();
-});
-$("#collapse-advanced").bind("click",function(){
-    var display = d3.select("table.expand").style('display')
-    d3.select("table.expand").style('display',(display == "none" ? "table": "none"));
-    d3.select('#expand-advanced').style('display','table');
-    d3.select('#collapse-advanced').style('display','none');
-    reset_height();
-});
+$(function(){
+  $("#expand-advanced").bind("click",function(){    
+      var display = d3.select("table.expand").style('display')
+      d3.select("table.expand").style('display',(display == "none" ? "table": "none"));
+      d3.select('#expand-advanced').style('display','none');
+      d3.select('#collapse-advanced').style('display','table');
+      reset_height();
+  });
+  $("#collapse-advanced").bind("click",function(){
+      var display = d3.select("table.expand").style('display')
+      d3.select("table.expand").style('display',(display == "none" ? "table": "none"));
+      d3.select('#expand-advanced').style('display','table');
+      d3.select('#collapse-advanced').style('display','none');
+      reset_height();
+  });
+})
 function reset_height(){
     // Allows the the height to change when advanced is toggles
     $("#network-arch").tabulator("setHeight",300);

@@ -48,39 +48,41 @@ set_layers("#network-arch",all_layers);
 **********************************/
 
 // Lower toolbar events for table
-$("#tool-edit").bind("click",function(){
-    var selectedData = $("#network-arch").tabulator("getSelectedData")[0];
-    layers = [newLayer(selectedData.type,+$("#InputSize").val().slice(0,1),selectedData)]
-    build_list();    
-    d3.select("#add_layer").text('Edit').on("click","")
-    $("#add_layer").bind("click",function(){        
-        layers[0].layer = selectedData.layer;
-        all_layers[selectedData.layer-1] = layers[0]
+$(function(){
+    $("#tool-edit").bind("click",function(){
+        var selectedData = $("#network-arch").tabulator("getSelectedData")[0];
+        layers = [newLayer(selectedData.type,+$("#InputSize").val().slice(0,1),selectedData)]
+        build_list();    
+        d3.select("#add_layer").text('Edit').on("click","")
+        $("#add_layer").bind("click",function(){        
+            layers[0].layer = selectedData.layer;
+            all_layers[selectedData.layer-1] = layers[0]
+            set_layers("#network-arch",all_layers)
+            layers = [newLayer("Select",+$("#InputSize").val().slice(0,1))];
+            build_list();
+        });
+    });
+    $("#tool-copy").bind("click",function(){
+        var selectedData = $("#network-arch").tabulator("getSelectedData")[0];
+        var new_layer = newLayer(selectedData.type, +$("#InputSize").val().slice(0,1), selectedData)
+        trim_copy = function(str){
+            if (str.indexOf('-Copy') > 0)
+                return str.slice(0,str.indexOf('-Copy'));        
+            return str;
+        }
+        var dups = all_layers.hard_copy().filter(d => trim_copy(d.name) == trim_copy(selectedData.name))
+        new_layer.name = trim_copy(new_layer.name)+"-Copy"+dups.length;
+        new_layer.layer = all_layers.length+1
+        all_layers.push(new_layer)
         set_layers("#network-arch",all_layers)
-        layers = [newLayer("Select",+$("#InputSize").val().slice(0,1))];
-        build_list();
+    });
+    $("#tool-delete").bind("click",function(){
+        var selectedData = $("#network-arch").tabulator("getSelectedData")[0];
+        all_layers = all_layers.filter(d => d.layer != selectedData.layer);
+        var cnt=1; all_layers.forEach(d => d.layer = cnt++);
+        set_layers("#network-arch",all_layers);
     });
 });
-$("#tool-copy").bind("click",function(){
-    var selectedData = $("#network-arch").tabulator("getSelectedData")[0];
-    var new_layer = newLayer(selectedData.type, +$("#InputSize").val().slice(0,1), selectedData)
-    trim_copy = function(str){
-        if (str.indexOf('-Copy') > 0)
-            return str.slice(0,str.indexOf('-Copy'));        
-        return str;
-    }
-    var dups = all_layers.filter(d => trim_copy(d.name) == trim_copy(selectedData.name))
-    new_layer.name = trim_copy(new_layer.name)+"-Copy"+dups.length;
-    new_layer.layer = all_layers.length+1
-    all_layers.push(new_layer)
-    set_layers("#network-arch",all_layers)
-})
-$("#tool-delete").bind("click",function(){
-    var selectedData = $("#network-arch").tabulator("getSelectedData")[0];
-    all_layers = all_layers.filter(d => d.layer != selectedData.layer);
-    var cnt=1; all_layers.forEach(d => d.layer = cnt++);
-    set_layers("#network-arch",all_layers);
-})
 
 /*****************************
 * Sends Job Info to back-end *
