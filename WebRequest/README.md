@@ -5,6 +5,3 @@ The files here provide abstractions for communicating with the Google Cloud Data
 run `pip3 -r requirements.txt` to install dependencies for development. 
 
 run `export GOOGLE_APPLICATION_CREDENTIALS="[Path to this dir]/data-store-authentication.json"` to set credentials for the Google Cloud Datastore client.
-
-### Contributors: ###
-__Doug Sherman:__ Designed all the functionality for this component. 

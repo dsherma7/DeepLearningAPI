@@ -27,16 +27,16 @@ class BuildForm(FlaskForm):
     Optimizers = [('Select','Select an Optimizer'),('grad','Gradient Descent'),('adadelta','Adadelta'),('adagrad','Adagrad'),('adagradda','Adagrad Dual Averaging'),('adam','Adam Optimizer'),('momentum','Momentum Optimizer')]
     LossFuncs  = [('Select','Select a Loss Function'), ("log","Log Loss"), ("hinge","Hinge Loss"), ("mse","Mean Squared Error"), ("AbsDif","Absolute Difference"), ("CosDif","Cosine Difference"), ("mpse","Mean Pairwise Squared Error"), ("sigmoid","Sigmoid Cross Entropy"), ("softmax","Softmax Cross Entropy"), ("sparseSoftmax","Sparse Softmax Cross Entropy")]
 
-    InputSize  = SelectField('InputSize', choices=Sizes, default="2D")
+    input_size  = SelectField('input_size', choices=Sizes, default="2D")
     # InputShape = IntegerField('InputShape')
     LayerType  = SelectField('LayerType', choices=LayerTypes, default='Select')
     Optimizer  = SelectField('Optimizer', choices=Optimizers, default='grad', validators=[validators.NoneOf(values=['Select'], message='This field is required')])
-    LossFunct  = SelectField('Loss Function', choices=LossFuncs, default='softmax', validators=[validators.NoneOf(values=['Select'], message='This field is required')])
-    Name       = StringField('Name', validators=[DataRequired('This field is required')])    
-    Comments   = StringField('Comments')    
-    Batch_Size = IntegerField('Batch_Size',default=100)
-    Train_Steps= IntegerField('Train_Steps',default=1)
-    Shuffle    = BooleanField('Shuffle',default=True)
+    loss       = SelectField('loss', choices=LossFuncs, default='softmax', validators=[validators.NoneOf(values=['Select'], message='This field is required')])
+    project    = StringField('project', validators=[DataRequired('This field is required')])    
+    comments   = StringField('comments')    
+    batch_size = IntegerField('batch_size',default=100)
+    training_steps = IntegerField('training_steps',default=1)
+    shuffle_batch  = BooleanField('shuffle_batch',default=True)
 
 class StatusForm(FlaskForm):
     '''

@@ -15,10 +15,10 @@ X_train, X_test, y_train, y_test = train_test_split(combined_data, combined_labe
 # These are the commands that will be used to publish data. 
 # it will save the 'X_train' data in ../userspace/npjoodi/001/train_x
 # If the file path is not created, it will create it automatically
-orch.publish_data(X_train, 'dsherman', 'J00031', 'train', 'x' )
-orch.publish_data(y_train, 'dsherman', 'J00031', 'train', 'y' )
-orch.publish_data(X_test, 'dsherman', 'J00031', 'test', 'x' )
-orch.publish_data(y_test, 'dsherman', 'J00031', 'test', 'y' )
+orch.publish_data(X_train, 'dsherman', 'J00040', 'train', 'x' )
+orch.publish_data(y_train, 'dsherman', 'J00040', 'train', 'y' )
+orch.publish_data(X_test, 'dsherman', 'J00040', 'test', 'x' )
+orch.publish_data(y_test, 'dsherman', 'J00040', 'test', 'y' )
 
 
 # This command will create the network. It makes a request to 
@@ -26,7 +26,8 @@ orch.publish_data(y_test, 'dsherman', 'J00031', 'test', 'y' )
 # I am currently hardcoding the params because we do not
 # have the data in the format that this code works with
 # no return
-orch.create_network('dsherman', 'J00031')
+params = us.get_architecture('dsherman','J00001')
+orch.create_network('dsherman', 'J00001', params)
 
 # This command will train the network for the specific user
 # and job id. The last option tells the network which
@@ -34,12 +35,12 @@ orch.create_network('dsherman', 'J00031')
 # the train data. But we could train on the test data if we wanted to
 # this will save the model in the userspace
 # no return
-orch.train_network('dsherman', 'J00031', 'UI_Test')
+orch.train_network('dsherman', 'J00001', 'data')
 
 # Evaluate the model with the same logic as above. It will use the 
 # stored model in the userspace to do this.
 # simply returns the accuracy and loss in one object for now
-orch.eval_network('dsherman', 'J00031', 'test')
+orch.eval_network('dsherman', 'J00040', 'test')
 
 # predict with no ground truth
 # returns an array of objects:
@@ -47,5 +48,5 @@ orch.eval_network('dsherman', 'J00031', 'test')
 #       'probabilities:[[the probabilities of each class as an array of floats]]'
 #     }
 # and object for each prediction
-orch.predict('dsherman', 'J00031', 'test')
+orch.predict('dsherman', 'J00040', 'test')
 

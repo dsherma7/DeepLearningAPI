@@ -109,6 +109,7 @@ ENV/
 # ignore userspace files
 user_space/*
 !README
+params.npy
 
 # Ignore npm helper files
 package-lock.json

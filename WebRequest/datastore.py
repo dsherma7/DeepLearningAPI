@@ -7,53 +7,7 @@ from importlib.machinery import SourceFileLoader
 helper = SourceFileLoader("datastore", "../WebRequest/helper.py").load_module()
 
 # # Instantiates a client
-client = datastore.Client(project="tensorfloss")
-
-## Helper functions for the functions needed for 
-## Python server and user interfaces
-def format(val):
-	if type(val) == list:
-		return [format(x) for x in val]
-	if type(val) == dict:
-		return {x:format(val[x]) for x in val}
-
-	try:
-		float(val)
-	except ValueError:
-		return str(val)
-	try: 
-		int(val)
-	except ValueError:		
-		return float(val)
-	return int(val)
-	
-def flatten(params):
-	new_params = {}
-	cnt = 1
-	for key in params:
-		if 'layer' in key:
-			for layer in params[key]:
-				new_params['layer'+str(cnt)] = str(layer)
-				cnt=cnt+1
-		else:
-			for task in params[key]:
-				new_params[task] = params[key][task]
-	return(new_params)	
-
-def expand(params):
-	train = {}
-	layers = []
-	# Get the layers
-	for key in np.sort([x for x in params.keys() if 'layer' in x]):
-		expanded = locals()
-		exec("var =" + params[key],globals(),expanded)
-		layers.append({x:format(expanded['var'][x]) for x in expanded['var']})
-	# Get the 
-	for key in params:			
-		if 'layer' not in key:
-			train[key] = params[key]
-	return({'train':train,'layers':layers})
-	
+client = datastore.Client(project="tensorfloss")	
 def add_job(params):	
 	'''
 	Stores the values in params for a
@@ -67,15 +21,16 @@ def add_job(params):
 		-status: Current status of job (built/trained)
 		-storage-loc: Location of weights on Python server		
 	'''			
-	params = flatten(params)
-	user = params['user']
-	job = helper.parse_JobId(params['job'])
+	# params = flatten(params)
+	user = params['train']['user']
+	job = helper.parse_JobId(params['train']['job'])
 	task_key = client.key('jobs', user+job)
 	task = datastore.Entity(key=task_key)	
 	for key in params:
 		task[key] = params[key]
 	task['date'] = strftime("%m/%d/%y",gmtime())
 	task['job'] = job
+	task['user'] = user
 	client.put(task)	
 
 def list_entities(kind):
@@ -90,14 +45,14 @@ def get_job(user,job):
 	all_jobs = list_entities('jobs')
 	this_job = [x for x in all_jobs if (x['user']+helper.parse_JobId(x['job']) == user+job)]
 	if len(this_job) > 1:
-		return([expand(x) for x in this_job])
-	return(expand(this_job[0]))
+		raise NameError("More than one matching job for "+user+"/"+job)
+	return (this_job[0])
 
 def get_jobs_from_user(user):
 	# Reads all jobs and then returns any jobs for a given user
 	all_jobs = list_entities('jobs')
 	jobs = [x for x in all_jobs if (x['user'] == user)]
-	jobs = 	[expand(x) for x in jobs]
+	# jobs = 	[expand(x) for x in jobs]
 	return (jobs)
 
 def set_val(user,job,key,val):
@@ -114,14 +69,20 @@ def set_val(user,job,key,val):
 def get_next_jobid(user):
 	# Use this to get the next available job id for a user
 	all_jobs = get_jobs_from_user(user)
+	if len(all_jobs) == 0:
+		return helper.parse_JobId(1)
 	max_job = max(int(x['train']['job'].replace('J','')) for x in all_jobs)
 	return helper.parse_JobId(max_job+1)
 
 def get_job_stats(user):
 	# Gets the stats for each job of a given user
 	all_jobs = get_jobs_from_user(user)
-	all_jobs = [{x:each_job['train'][x] for x in each_job['train']} for each_job in all_jobs]
-	return (all_jobs)
+	job_stats = []
+	for each_job in all_jobs:
+		dic = {x:each_job[x] for x in each_job if x != 'train' and x != 'layers'}
+		[dic.update({x:each_job['train'][x]}) for x in each_job['train']]
+		job_stats.append(dic)
+	return (job_stats)
 
 def add_user(user,params):
 	'''
@@ -162,9 +123,6 @@ def get_architecture(user,job):
 	'''
 	job = get_job(user,job)
 	return job
-	description = {x:job[x] for x in job if 'layer' not in x}
-	layers = [job[x] for x in job if 'layer' in x]
-	return ({'train':description,'layers':layers})
 
 def change_status(user,job,status):
 	set_val(user,job,'status',status)	

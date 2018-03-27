@@ -31,32 +31,92 @@ var HttpClient = function() {
         anHttpRequest.open( "GET", aUrl, true );            
         anHttpRequest.send( null );
     };
-    this.set = function(aUrl, aCallback) {
+    this.head = function(aUrl, aCallback) {
         var anHttpRequest = new XMLHttpRequest();
         anHttpRequest.onreadystatechange = function() { 
             if (anHttpRequest.readyState == 4 && anHttpRequest.status == STATUS_OK)
                 aCallback(anHttpRequest.responseText);
         }
-        anHttpRequest.open( "SET", aUrl, true );            
+        anHttpRequest.open( "GET", aUrl, true );            
         anHttpRequest.send( null );
     };
-    this.post = function(aUrl, aCallback) {
-        var anHttpRequest = new XMLHttpRequest();
-        anHttpRequest.onreadystatechange = function() { 
-            if (anHttpRequest.readyState == 4 && anHttpRequest.status == STATUS_OK)
-                aCallback(anHttpRequest.responseText);
-        }
-        anHttpRequest.open( "POST", aUrl, true );            
-        anHttpRequest.send( null );
+    this.set = function(aUrl, data, aCallback) {
+        $.ajax({
+            url: aUrl,
+            headers: {
+                'X_CSRF_TOKEN':$("#csrf_token").val(),
+                'Content-Type':'application/json'
+            },
+            method: 'SET',
+            dataType: 'json',
+            data: JSON.stringify(data),
+            success: aCallback
+          });
     };
-    this.put = function(aUrl, aCallback) {
-        var anHttpRequest = new XMLHttpRequest();
-        anHttpRequest.onreadystatechange = function() { 
-            if (anHttpRequest.readyState == 4 && anHttpRequest.status == STATUS_OK)
-                aCallback(anHttpRequest.responseText);
-        }
-        anHttpRequest.open( "PUT", aUrl, true );            
-        anHttpRequest.send( null );
+    this.post = function(aUrl, data, aCallback) {
+        $.ajax({
+            url: aUrl,
+            headers: {
+                'X_CSRF_TOKEN':$("#csrf_token").val(),
+                'Content-Type':'application/json'
+            },
+            method: 'POST',
+            dataType: 'json',
+            data: JSON.stringify(data),
+            success: aCallback
+          });
+    };
+    this.put = function(aUrl, data, aCallback) {
+        $.ajax({
+            url: aUrl,
+            headers: {
+                'X_CSRF_TOKEN':$("#csrf_token").val(),
+                'Content-Type':'application/json'
+            },
+            method: 'PUT',
+            dataType: 'json',
+            data: JSON.stringify(data),
+            success: aCallback
+          });
+    };
+    this.options = function(aUrl, data, aCallback) {
+        $.ajax({
+            url: aUrl,
+            headers: {
+                'X_CSRF_TOKEN':$("#csrf_token").val(),
+                'Content-Type':'application/json'
+            },
+            method: 'OPTIONS',
+            dataType: 'json',
+            data: JSON.stringify(data),
+            success: aCallback
+          });
+    };
+    this.connect = function(aUrl, data, aCallback) {
+        $.ajax({
+            url: aUrl,
+            headers: {
+                'X_CSRF_TOKEN':$("#csrf_token").val(),
+                'Content-Type':'application/json'
+            },
+            method: 'CONNECT',
+            dataType: 'json',
+            data: JSON.stringify(data),
+            success: aCallback
+          });
+    };
+    this.trace = function(aUrl, data, aCallback) {
+        $.ajax({
+            url: aUrl,
+            headers: {
+                'X_CSRF_TOKEN':$("#csrf_token").val(),
+                'Content-Type':'application/json'
+            },
+            method: 'TRACE',
+            dataType: 'json',
+            data: JSON.stringify(data),
+            success: aCallback
+          });
     };
 }
 

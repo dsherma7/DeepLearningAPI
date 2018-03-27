@@ -98,16 +98,11 @@ submit_layers = function() {
     StoreNetwork();    
     if (validate_form) {        
         var client = new HttpClient();        
-        var url  = '/_submit_layers?' + get_all_params();            
-        client.get(url, function(response) {
-            response = JSON.parse(response).out            
-            if (response.status == 200){
-                d3.select("#message-row").append("font").classed("msg-good",true).text("Job submitted as "+response.job)
-            }else{
-                d3.select("#message-row").append("font").classed("msg-bad",true).text("Job submission failed!");
-            }            
-            d3.select("#message-row")
-              .selectAll("font").transition().duration(6000).ease(d3.easeBack)
+        client.post('/_submit_layers',get_all_params(),function(response){
+            var font = d3.select("#message-row").append("font").attr('class','msg-good').text(response.msg)
+            if (response.status != STATUS_OK)
+                font.attr('class','msg-bad')
+            d3.select("#message-row").selectAll("font").transition().duration(6000).ease(d3.easeBack)
               .style("opacity",0).on("end",function(){ d3.select(this).remove();});            
             Kill_Loading();
         });
@@ -120,15 +115,14 @@ function get_all_params() {
     if (validate_form()){
         var new_layers = all_layers.hard_copy(),
             new_layers = format_layers(new_layers);
+          
+        var params = {"train":get_other_params()};
+        params['layers'] = new_layers;
+        params['train']['optimizer'] = optimizer;
 
-        var layers = 'layers='+remove_bads(JSON.stringify(new_layers)),
-            optim  = 'optimizer='+remove_bads(JSON.stringify(optimizer)),
-            other  = get_other_params();            
-        
-        return [layers,optim,other].join("&");
+        return params;
     }
     return undefined;
-
 }
 
 function validate_form() {
@@ -154,21 +148,25 @@ function remove_bads(str) {
 }
 
 get_other_params = function() {
-    
-    var dict = {
-        "name"    :  d3.select("#Name").property('value'),
-        "comments":  d3.select("#Comments").property('value'),
-        "input"   :  d3.select("#InputSize").property('value'),
-        "loss"    :  d3.select("#LossFunct").property('value'),
-        "batchsz" : +d3.select("#Batch_Size").property('value'),
-        "shuffle" : +d3.select("#Shuffle").property('checked'),
-        "steps"   : +d3.select("#Train_Steps").property('value'),
-        "user"    : localStorage.username
+    function val_of(obj){
+        switch (obj.type){
+            case "checkbox":
+                return obj.checked;
+            case "number":
+                return +obj.value;
+            default:
+                return obj.value;
+        }
     }
-    var url = ""
-    for (var key in dict)
-        url += "&" + key + "=" + dict[key];
-    return url.slice(1);
+    var dict = { "user":localStorage.username }
+    d3.select(".main").selectAll('input,select').filter(function(){
+        return this.getAttribute('id') != null & 
+               this.getAttribute('id') != 'layers' &
+               this.getAttribute('id') != 'Optimizer';
+    }).each(function(d){
+        dict[this.getAttribute("id")] = val_of(this);
+    })
+    return dict;    
 }
 
 

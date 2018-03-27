@@ -8,20 +8,17 @@ import math
 # import user_space_utils as utils
 from importlib.machinery import SourceFileLoader
 utils = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_utils.py").load_module()
-ds    = SourceFileLoader("datastore", "../WebRequest/datastore.py").load_module()
 
 tf.logging.set_verbosity(tf.logging.INFO)
 USER_DATA_PATH = utils.USER_DATA_PATH
 
 class Network:
     def __init__(self,username,job,params):
-        ds.change_status(params['train']['user'],params['train']['job'],'Building')
         user_sub_path = utils.create_user_sub_path(username, job)
         self.params = params
         print(USER_DATA_PATH+user_sub_path)
         self.classifier = tf.estimator.Estimator(
             model_fn=self.model, model_dir=USER_DATA_PATH+user_sub_path+'/model')
-        ds.change_status(self.params['train']['user'],self.params['train']['job'],'Built')
 
 
     def model(self,features, labels, mode):    
@@ -79,7 +76,6 @@ class Network:
 
 
     def train(self,x,y):
-        ds.change_status(self.params['train']['user'],self.params['train']['job'],'Training')        
         train_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": x},
             y=y,
@@ -89,27 +85,22 @@ class Network:
         self.classifier.train(
             input_fn=train_input_fn,
             steps=int(self.params['train']['training_steps']))
-        ds.change_status(self.params['train']['user'],self.params['train']['job'],'Trained')
 
     def eval(self,x, y):
-        ds.change_status(self.params['train']['user'],self.params['train']['job'],'Evaluating')
         eval_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": x},
             y=y,
             num_epochs=1,
             shuffle=False)
         eval_results = self.classifier.evaluate(input_fn=eval_input_fn)
-        ds.change_status(self.params['train']['user'],self.params['train']['job'],'Evaluated')
         return eval_results
 
     def predict(self,x):
-        ds.change_status(self.params['train']['user'],self.params['train']['job'],'Predicting')
         pred_input_fn = tf.estimator.inputs.numpy_input_fn(
             x={"x": x},
             num_epochs=1,
             shuffle=False)
         pred_results = self.classifier.predict(input_fn=pred_input_fn)
-        ds.change_status(self.params['train']['user'],self.params['train']['job'],'Predicted')
         return pred_results
 
     def parse_activation(self,act) :

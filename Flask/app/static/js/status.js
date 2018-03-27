@@ -17,7 +17,7 @@ function update(){
     user = localStorage.username;
     var client = new HttpClient();
     client.get('/_get_jobs?user='+user, function(response) {
-        $("#example-table").tabulator("setData", JSON.parse(response));
+        $("#example-table").tabulator("setData", JSON.parse(response).jobs);
     });    
     $("#username").val(localStorage.username);
     $("#example-table").tabulator("setFilter", "status", "!=", "archived");
@@ -30,7 +30,7 @@ archive = function(){
     var user = data.user, job = data.job;
     var client = new HttpClient();
     var url = "_archive?user=" + user + "&job=" + job;
-    client.get(url, function(response) { 
+    client.set(url, function(response) { 
         response = JSON.parse(response);
         $("#dd-login").trigger('change');
         if (response.status != STATUS_OK)
@@ -86,7 +86,28 @@ NoJob = function(){
     })
 }
 
-Choose_Data = function(user,job,type,selectVal) {
+
+SavePredictions = function(job,selectVal,response) {
+    var csvContent = "";
+    var preds = response.probs, classes = response.classes;
+    // Build Header
+    csvContent += "Prediction,";
+    for (var i=0; i<preds[0].length; i++){
+        csvContent += "Prob_"+i;
+        if (i < preds[0].length-1)
+            csvContent += ",";
+    }
+    csvContent += "\n";
+    // Builds remaining rows
+    for (var i=0; i<classes.length; i++){
+        csvContent += classes[i]+","+preds[i].join(",")+"\n";
+    }
+    // Download as CSV                            
+    SaveCSV(csvContent,job+"_"+selectVal+".csv"); 
+}
+
+
+RunModel = function(user,job,type,selectVal) {
     $.confirm({
         theme: "modern",
         title: 'Confirm '+type,
@@ -98,91 +119,37 @@ Choose_Data = function(user,job,type,selectVal) {
                 text: type,
                 btnClass: 'btn-blue',
                 action:function(){                                        
-                    var url = "/_"+type.toLowerCase()+"?user=" + user + "&job=" + job +"&datatype=" + selectVal;                                        
-                    var client = new HttpClient();
                     AddLoadingBar();                    
-                    client.get(url, function(response) { 
-                        response = JSON.parse(response);
-                        if (response.status == STATUS_OK){
-                            if (type == 'Train'){
-                                $.alert({
-                                    theme:"modern",                                
-                                    title: 'Training Complete',
-                                    content: response.msg,
-                                    buttons: {
-                                        ok: {
-                                            keys: ['enter', 'esc']
-                                        }
-                                    } 
-                                });
-                                Kill_Loading();
-                            }else if (type == 'Test'){                            
-                                var csvContent = "";
-                                var preds = response.probs, classes = response.classes;
-                                // Build Header
-                                csvContent += "Prediction,";
-                                for (var i=0; i<preds[0].length; i++){
-                                    csvContent += "Prob_"+i;
-                                    if (i < preds[0].length-1)
-                                        csvContent += ",";
-                                }
-                                csvContent += "\n";
-                                // Builds remaining rows
-                                for (var i=0; i<classes.length; i++){
-                                    csvContent += classes[i]+","+preds[i].join(",")+"\n";
-                                }
-                                // Download as CSV                            
-                                SaveCSV(csvContent,job+"_"+selectVal+".csv");                                                                                      
-                                Kill_Loading();
-                            }else if (type == 'Evaluate'){
-                                var evals = response.evals;
-                                var evals_txt = "<div class='evals'>" + "<b>Data:</b>" + selectVal + "<br>"+ 
-                                                "<b>Accuracy:</b>" + evals.accuracy + "<br>"+
-                                                "<b>Loss:</b>" + evals.loss + "<br>"+
-                                                "<b>Global Step:</b>" + evals.global_step + "</div>";
-                                $.alert({
-                                    theme:"modern",
-                                    title:  "Evaluation of "+job,
-                                    content: evals_txt,
-                                    type: 'blue',
-                                    backgroundDismiss: 'submit',
-                                    buttons: {
-                                        ok: {
-                                            keys: ['enter', 'esc']
-                                        }
-                                    } 
-                                });
-                                Kill_Loading();
-                                
-                            }else {
-                                $.alert({
-                                    theme:"modern",
-                                    type:"red",
-                                    title:"Error!",
-                                    content:"Bad Type specifed!",
-                                    buttons: {
-                                        ok: {
-                                            keys: ['enter', 'esc']
-                                        }
-                                    } 
-                                });
-                                Kill_Loading();
+                    var client = new HttpClient();
+                    var send_data = {'user':user,'job':job,'datatype':selectVal}
+                    client.post("/_"+type.toLowerCase(), send_data , function(response) { 
+                        
+                        var content = [response.msg];
+
+                        if (type == 'Test'){                                                        
+                            SavePredictions(job,selectVal,response)                                                                                     
+                        }else if (type == 'Evaluate'){
+                            var evals = response.evals, evals_txt = [];
+                            for (key in evals){
+                                evals_txt.push("<b>"+key+":</b>"+evals[key])
                             }
-                            $("#dd-login").trigger('change');                                                   
-                        }else{
-                            $.alert({
-                                theme:"modern",
-                                type:"red",
-                                title:"Error!",
-                                content:response.msg,
-                                buttons: {
-                                    ok: {
-                                        keys: ['enter', 'esc']
-                                    }
-                                } 
-                            });
-                            Kill_Loading();
-                        }                             
+                            content.push("<br><div class='evals'>"+evals_txt.join("<br>")+"</div>");
+                        }
+
+                        $.alert({
+                            theme:"modern",  
+                            type: (response.status == STATUS_OK ? 'blue' : 'red'),                           
+                            title: type,
+                            content: content.join("<br>"),
+                            buttons: {
+                                ok: {
+                                    keys: ['enter', 'esc']
+                                }
+                            } 
+                        });
+
+                        Kill_Loading();
+                        $("#dd-login").trigger('change');                             
                     });                       
                 }
             },
@@ -198,7 +165,7 @@ TrainTestEval = function(x){
     if (!data){ return NoJob(); }        
     var user = data.user, job = data.job;
     var client = new HttpClient();
-    var url = "_get_dtypes?user=" + user + "&job=" + job;
+    var url = "_get_dtypes?" + jQuery.param({"user":user,"job":job});
     client.get(url, function(response) { 
         var dtypes = JSON.parse(response).dtypes;
         if (!dtypes.length){
@@ -206,7 +173,7 @@ TrainTestEval = function(x){
                 theme:"modern",
                 columnClass: 'medium',
                 title:"Publish Data",
-                content:"No data found for job "+job+'!<br>'+"Use \"Publish Data\" below to publish a dataset.",
+                content:"No data found for job "+job+'!<br>'+"Use <b>Publish Data</b> below to publish a dataset.",
                 buttons: {
                     ok: {
                         keys: ['enter', 'esc']
@@ -226,7 +193,7 @@ TrainTestEval = function(x){
                 onContentReady: function(){
                     d3.select("div.jconfirm-buttons")              
                       .insert("select",":first-child")
-                      .attr("id",'jconfirm-select')              
+                      .attr("id",'jconfirm-select')       
                       .classed("jconfirm-select",true)
                       .on('change',function(x){
                         selectVal = this.value;
@@ -242,7 +209,7 @@ TrainTestEval = function(x){
                             btnClass: 'btn-blue',
                             action: function(){
                                 if (selectVal){
-                                    Choose_Data(user,job,type,selectVal);
+                                    RunModel(user,job,type,selectVal);
                                 }else{
                                     d3.select("div.jconfirm-box").append("text")
                                       .classed("jconfirm-err",true).text("Error, please select a dataset!");
@@ -260,10 +227,10 @@ TrainTestEval = function(x){
 
 chg_comment = function(cell){
 	var data = cell.getData();
-	var url = "/_set_comment?user=" + data.user + "&job=" + data.job +"&comment=" + data.comment;
+	var send_data = {'user':data.user, 'job':data.job,'comment':data.comment}
 	var client = new HttpClient();
-	client.get(url, function(response) {
-	    // do something with response
+	client.set('/_set_comment', send_data, function(response) {
+	    // do something with response        
 	});
 }
 
@@ -323,7 +290,7 @@ get_data = function(){
     var user = localStorage.username;
     var client = new HttpClient();
     client.get('/_get_jobs?user='+user, function(response) {
-        $("#example-table").tabulator("setData", JSON.parse(response));   
+        $("#example-table").tabulator("setData", JSON.parse(response).jobs);   
         check_archived();
     });    
 }; 

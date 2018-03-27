@@ -5,6 +5,7 @@ from importlib.machinery import SourceFileLoader
 from werkzeug import secure_filename
 from app import app, csrf
 import pickle as pickle
+from .responses import * 
 from .forms import * 
 import pandas as pd
 import numpy as np
@@ -106,90 +107,76 @@ def signup():
 # 		Web Request Functions
 #############################################
 
-@app.route('/_submit_layers', methods=['PUT','POST','GET'])
+@app.route('/_submit_layers', methods=['POST'])
 def submit_layers():	
 	if request.method == 'POST':
-		var = request.get_json()
-		print(divider+str(var)+divider)
+		print(divider+str(request.data)+divider)
 		print(divider+str(request.args)+divider)
-		return Response(json.dumps(var))
-	# Get the params passed as Lists/Dicts
-	exec("layers =" + str(request.args.get('layers', 0, type=str)),globals())	
-	exec("optimizer =" + str(request.args.get('optimizer', 0, type=str)),globals())	
-	# Get other parameters	
-	name  = request.args.get('name', 0, type=str)
-	date  = request.args.get('date', 0, type=str)
-	size  = request.args.get('input', 0, type=str)
-	loss  = request.args.get('loss', 0, type=str)
-	user  = request.args.get('user', 0, type=str)
-	shape = request.args.get('shape',0, type=str)
-	batchsz = request.args.get('batchsz',0, type=str)
-	shuffle = request.args.get('shuffle',0, type=str)
-	steps   = request.args.get('steps',0, type=str)
-	
-	job = datastore.get_next_jobid(user)	
-	train = {"user":user,"project":name,"date":date,
-			 "input_size":size,"loss":loss,"shape":shape,
-			 "batch_size":batchsz,"shuffle_batch":shuffle,
-			 "training_steps":steps,"status":"designed",
-			 "optimizer":optimizer, "job":job}
+		params = request.get_json()
+		user = params['train']['user']
+		job = datastore.get_next_jobid(user)
+		params['train']['job'] = job
 
-	params = {'train':train,'layers':layers}	
-	datastore.add_job(params);		
-	orch.create_network(user, job, params)
-	return jsonify(out = {'status':200,"msg":"OK",'job':job})
+		np.save("params.npy", params)
+
+		datastore.add_job(params);		
+		orch.create_network(user, job, params)
+		return STATUS_OK("Job submitted as "+job)
+	return METHOD_NOT_ALLOWED("Method " + request.method + " is not allowed!")
 
 @app.route('/_get_jobs',methods=['GET'])
 def _get_jobs():
 	user = request.args.get('user', 0, type=str)
 	jobs = datastore.get_job_stats(user)
-	return Response(json.dumps(jobs),  mimetype='application/json')
+	return STATUS_OK('Job Request Successful!',{'jobs':jobs})
 
-@app.route('/_set_comment',methods=['GET','SET'])
+@app.route('/_set_comment',methods=['SET'])
 def _set_comment():
-	comment = request.args.get('comment',  0, type=str)
-	user = request.args.get('user', 0, type=str)
-	job = request.args.get('job',  0, type=str)	
-	datastore.set_comment(user,job,comment)
-	return jsonify(status="200")
+	params = request.get_json()
+	datastore.set_comment(params['user'],params['job'],params['comment'])
+	return STATUS_OK("Comment Set Successfully!")
 
-@app.route('/_train',methods=['GET','SET'])
+@app.route('/_train',methods=['POST'])
 def _train_model():
-	user = request.args.get('user', 0, type=str)
-	job = request.args.get('job',  0, type=str)	
-	datatype = request.args.get('datatype',  0, type=str)	
+	params = request.get_json()
+	user = params['user']
+	job = params['job']
+	datatype = params['datatype']
+	print(divider+user+job+datatype+divider)
 	try:
 		orch.train_network(user, job, datatype)
-		return jsonify({'status':"200",'msg':"Job "+job+" done Training!"})
+		return STATUS_OK("Job "+job+" done Training!")
 	except:
 		print("Error")
-	return jsonify({'status':"400",'msg':"Training data "+datatype+" on job "+job+" failed!"})
+	return BAD_REQUEST("Training data "+datatype+" on job "+job+" failed!")
 
-@app.route('/_test',methods=['GET','SET'])
+@app.route('/_test',methods=['POST'])
 def _test_model():
-	user = request.args.get('user', 0, type=str)
-	job = request.args.get('job',  0, type=str)	
-	datatype = request.args.get('datatype',  0, type=str)	
+	params = request.get_json()
+	user = params['user']
+	job = params['job']
+	datatype = params['datatype']
 	try:
 		preds = orch.predict(user, job, datatype)
 		classes = [float(x['class']) for x in preds]
 		probs = [[float(x) for x in y['probabilities']] for y in preds] 	
-		return jsonify({'status':"200","probs":probs,"classes":classes})
+		return STATUS_OK("Predicting "+datatype+" on "+job+" Successful!",{"probs":probs,"classes":classes})
 	except:
 		print("Error")
-	return jsonify({'status':"400",'msg':"Predicting on data "+datatype+" with job "+job+" failed!"})
+	return BAD_REQUEST("Predicting on data "+datatype+" with job "+job+" failed!")
 
-@app.route('/_evaluate',methods=['GET','SET'])
+@app.route('/_evaluate',methods=['POST'])
 def _eval_model():
-	user = request.args.get('user', 0, type=str)
-	job = request.args.get('job',  0, type=str)	
-	datatype = request.args.get('datatype',  0, type=str)	
+	params = request.get_json()
+	user = params['user']
+	job = params['job']
+	datatype = params['datatype']
 	try:
 		evals = orch.eval_network(user, job, datatype)
-		return jsonify({'status':"200",'evals':{x:round(float(evals[x]),3) for x in evals}})
+		return STATUS_OK("Evaluating "+datatype+" on "+job+" Successful!",{'evals':{x:round(float(evals[x]),3) for x in evals}})
 	except:
 		print("Error")
-	return jsonify({'status':"400",'msg':"Evaluating job "+job+" with dataset "+datatype+" failed!"})
+	return BAD_REQUEST("Evaluating on data "+datatype+" with job "+job+" failed!")
 
 
 @app.route('/_get_dtypes',methods=['GET'])
@@ -197,14 +184,15 @@ def _get_dtypes():
 	user = request.args.get('user', 0, type=str)
 	job = request.args.get('job',  0, type=str)	
 	dtypes = orch.get_dtypes(user,job)
-	return jsonify(dtypes=dtypes)
+	return STATUS_OK("Datatypes retrieved!",{"dtypes":dtypes})
 
-@app.route('/_archive',methods=['GET'])
+@app.route('/_archive',methods=['SET'])
 def _archive():	
-	user = request.args.get('user', 0, type=str)
-	job = request.args.get('job',  0, type=str)	
+	params = request.get_json()
+	user = params['user']
+	job = params['job']
 	datastore.change_status(user,job,"archived")
-	return jsonify(status="200")
+	return STATUS_OK("Job "+job+" Archived Successfully!")
 
 def read_data(f):
 	if f == None:
@@ -223,15 +211,16 @@ def format_data(X,y):
 def get_users():
 	users = datastore.list_entities('users')
 	users = [x['username'] for x in users]
-	return jsonify(users=users)
+	return STATUS_OK("Users Returned Successfully!",{"users":users})
 
-@app.route('/_add_user',methods=['GET','POST'])
+@app.route('/_add_user',methods=['SET'])
 def add_user():
-	user = request.args.get('user', 0, type=str)		
+	params = request.get_json()
+	user = params['user']
 	if datastore.username_exists(user):
-		return jsonify({'status':600,"msg":"Username Already Exists!"})
+		return FORBIDDEN("Username Already Exists!")
 	else:
-		exec("params =" + str(request.args.get('params', 0, type=str)),globals())	
+		# exec("params =" + str(request.args.get('params', 0, type=str)),globals())	
 		datastore.add_user(user,params)
-		return jsonify(out = {'status':200,"msg":"OK"})
-	return jsonify({'status':400,"msg":"Unknown Error"})
+		return STATUS_OK("User "+user+ " Created Successfully!")
+	return BAD_REQUEST("Unknown Error!")

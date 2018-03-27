@@ -105,16 +105,16 @@
 	<table class="table table-striped">	                
         <tr>
             <th>Project:</th>
-            <td>{{ form.Name }}<br>
+            <td>{{ form.project }}<br>
             	<!-- Error Handling -->
-                {% for error in form.Name.errors %} 
+                {% for error in form.project.errors %} 
                     <small><span style="color: red;">[{{ error }}]</span></small>
                 {% endfor %}
             </td>
         </tr>        
         <tr>
             <th>Input Size:</th>
-            <td>{{ form.InputSize }}</td>
+            <td>{{ form.input_size }}</td>
         </tr>
         <tr>
             <th>Add Layer:</th>
@@ -124,8 +124,8 @@
         </tr>
         <tr>
             <th>Comments:</th>
-            <td>{{ form.Comments }}<br>
-                {% for error in form.Comments.errors %} 
+            <td>{{ form.comments }}<br>
+                {% for error in form.comments.errors %} 
                     <small><span style="color: red;">[{{ error }}]</span></small>
                 {% endfor %}
             </td>
@@ -135,7 +135,7 @@
     <table class="table table-striped expand" style="display:none;">
         <tr>
             <th>Loss Function:</th>
-            <td>{{ form.LossFunct }}</td>
+            <td>{{ form.loss }}</td>
         </tr>
         <tr>
             <th>Optimizer:</th>
@@ -148,15 +148,15 @@
         </tr> 
         <tr>
             <th> Batch Size </th>
-            <td> {{ form.Batch_Size }} </td>
+            <td> {{ form.batch_size }} </td>
         </tr>
         <tr>
             <th> Shuffle Batch ?</th>
-            <td> {{ form.Shuffle }} </td>
+            <td> {{ form.shuffle_batch }} </td>
         </tr>
         <tr>
             <th> Training Steps </th>
-            <td> {{ form.Train_Steps}} </td>
+            <td> {{ form.training_steps}} </td>
         </tr>        
     </table>
     <i class="fa fa-caret-up expand" id="collapse-advanced" style="display:none;"> Advanced </i>   

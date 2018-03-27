@@ -51,7 +51,7 @@ function parse_params(obj,param,value) {
           break; 
 
         case "FilterField":
-          var size = +$("#InputSize").val().slice(0,1);
+          var size = +$("#input_size").val().slice(0,1);
           var row = obj.append("td")
           for (var i=0; i<size; i++){
              row.append("input")
@@ -141,7 +141,7 @@ function build_list() {
         .text(function(d){return d;});
     select.on('change', function(d=layer) {
       var index = layers.findIndex(function(f) {return f==layer;});
-      layers[index] = newLayer(this.options[this.selectedIndex].value,+$("#InputSize").val().slice(0,1));
+      layers[index] = newLayer(this.options[this.selectedIndex].value,+$("#input_size").val().slice(0,1));
       build_list();
     });
 
@@ -177,7 +177,7 @@ function build_list() {
 
 function clear_layer(layer) {  
   var index = layers.findIndex(function(f) {return f==layer;});
-  layers[index] = newLayer(layer.type,+$("#InputSize").val().slice(0,1));
+  layers[index] = newLayer(layer.type,+$("#input_size").val().slice(0,1));
   localStorage.removeItem("all_layers");
   localStorage.removeItem("optimizer");  
   build_list();
@@ -185,13 +185,13 @@ function clear_layer(layer) {
 
 function add_layer(layer) {
   if (validate(layer)){
-    var  new_layer = newLayer(layer.type,+$("#InputSize").val().slice(0,1),layer);
+    var  new_layer = newLayer(layer.type,+$("#input_size").val().slice(0,1),layer);
     new_layer['layer'] = all_layers.length+1;
     delete new_layer.Fields;
     all_layers.push(new_layer);
     set_layers('#network-arch',all_layers);
     var index = layers.findIndex(function(f) {return f==layer;});
-    layers[index] = newLayer(layer.type,+$("#InputSize").val().slice(0,1));
+    layers[index] = newLayer(layer.type,+$("#input_size").val().slice(0,1));
     build_list();
   }else{
     d3.select('td#layers').select('table')
