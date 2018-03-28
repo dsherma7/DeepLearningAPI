@@ -1,15 +1,11 @@
+import Tensorflow.user_space_utils as utils
+from Tensorflow.network import Network
+import WebRequest.datastore as ds
 import pickle as pickle
-import datastore as ds
 import tensorflow as tf
 import os
-# from network import Network
-# import user_space_utils as utils
-from importlib.machinery import SourceFileLoader
-net   = SourceFileLoader("network", "../Tensorflow/network.py").load_module()
-utils = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_utils.py").load_module()
 
 USER_DATA_PATH = utils.USER_DATA_PATH
-
 
 def create_user_space(username, job):
     if not os.path.exists(USER_DATA_PATH+'/'+username):
@@ -24,7 +20,7 @@ def get_user_space_data(username, job, data_set_type, y=True):
     if y:
         labels = load_data(username,job, data_set_type, 'y' )
     params = get_architecture(username, job)
-    network  = net.Network(username,job,params)
+    network  = Network(username,job,params)
     return data, network, labels
 
 def save_object(obj, username, job,data_set_type, data_type):

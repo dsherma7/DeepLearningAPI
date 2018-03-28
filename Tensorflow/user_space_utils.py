@@ -1,6 +1,6 @@
+import WebRequest.helper as helper
 import os
-from importlib.machinery import SourceFileLoader
-helper = SourceFileLoader("helper", "../WebRequest/helper.py").load_module()
+
 USER_DATA_PATH = '../user_space/'
 
 def create_user_sub_path(user,job):	

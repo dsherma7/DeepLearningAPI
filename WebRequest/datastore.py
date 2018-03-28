@@ -1,13 +1,10 @@
-# Imports the Google Cloud client library
-from google.cloud import datastore
-import numpy as np
 from time import gmtime, strftime
-from importlib.machinery import SourceFileLoader
-
-helper = SourceFileLoader("datastore", "../WebRequest/helper.py").load_module()
+from google.cloud import datastore
+import WebRequest.helper as helper
+from WebRequest import client
+import numpy as np
 
 # # Instantiates a client
-client = datastore.Client(project="tensorfloss")	
 def add_job(params):	
 	'''
 	Stores the values in params for a

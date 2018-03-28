@@ -1,21 +1,16 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-
-import numpy as np
-import sys
-sys.path.insert(0, '../WebRequest')
-import random
-# from network import Network
 import pickle as pickle
-# import user_space_handler as us
-# import user_space_utils as utils
-from importlib.machinery import SourceFileLoader
-net   = SourceFileLoader("network", "../Tensorflow/network.py").load_module()
-ds    = SourceFileLoader("datastore", "../WebRequest/datastore.py").load_module()
-utils = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_utils.py").load_module()
-us    = SourceFileLoader("user_space_utils", "../Tensorflow/user_space_handler.py").load_module()
+import numpy as np
+import random
+import sys
 
+sys.path.append('../')
+import Tensorflow.network as net
+import Tensorflow.user_space_handler as us
+import Tensorflow.user_space_utils as utils
+import WebRequest.datastore as ds
 
 def publish_data(obj, username, job, data_set_type, data_type):
     us.create_user_space(username, job)

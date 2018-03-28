@@ -10,11 +10,13 @@ from .forms import *
 import pandas as pd
 import numpy as np
 import json
+import sys
 import io
-# Tensorflow Server & Datastore Client
-orch 	  = SourceFileLoader("model_orchestrator", "../Tensorflow/model_orchestrator.py").load_module()
-datastore = SourceFileLoader("datastore", "../WebRequest/datastore.py").load_module()
 
+# Tensorflow Server & Datastore Client
+sys.path.append('../')
+from Tensorflow.model_orchestrator import * 
+import WebRequest.datastore as datastore 
 
 activations = ["ReLU","ReLU6","CReLU","ExpLU","SoftPlus","SoftSign","Sigmoid","Tanh"]
 paddings = ["Valid","Same"]
@@ -73,12 +75,12 @@ def job_status():
 			if data.shape[0] != lbls.shape[0]:
 				flash('Error, data mismatched! Check data and try again.')
 
-			if dtype in orch.get_dtypes(user,selected['job']):
+			if dtype in get_dtypes(user,selected['job']):
 				flash('Data type already exists! Choose a new name.')
 			else:
-				orch.publish_data(data, user, selected['job'], dtype, 'x' )
+				publish_data(data, user, selected['job'], dtype, 'x' )
 				if l1 != None:
-					orch.publish_data(lbls, user, selected['job'], dtype, 'y' )									
+					publish_data(lbls, user, selected['job'], dtype, 'y' )									
 				flash('Success!')
 
 	elif request.method == 'POST':
@@ -110,17 +112,13 @@ def signup():
 @app.route('/_submit_layers', methods=['POST'])
 def submit_layers():	
 	if request.method == 'POST':
-		print(divider+str(request.data)+divider)
-		print(divider+str(request.args)+divider)
 		params = request.get_json()
 		user = params['train']['user']
 		job = datastore.get_next_jobid(user)
 		params['train']['job'] = job
 
-		np.save("params.npy", params)
-
 		datastore.add_job(params);		
-		orch.create_network(user, job, params)
+		create_network(user, job, params)
 		return STATUS_OK("Job submitted as "+job)
 	return METHOD_NOT_ALLOWED("Method " + request.method + " is not allowed!")
 
@@ -144,7 +142,7 @@ def _train_model():
 	datatype = params['datatype']
 	print(divider+user+job+datatype+divider)
 	try:
-		orch.train_network(user, job, datatype)
+		train_network(user, job, datatype)
 		return STATUS_OK("Job "+job+" done Training!")
 	except:
 		print("Error")
@@ -157,7 +155,7 @@ def _test_model():
 	job = params['job']
 	datatype = params['datatype']
 	try:
-		preds = orch.predict(user, job, datatype)
+		preds = predict(user, job, datatype)
 		classes = [float(x['class']) for x in preds]
 		probs = [[float(x) for x in y['probabilities']] for y in preds] 	
 		return STATUS_OK("Predicting "+datatype+" on "+job+" Successful!",{"probs":probs,"classes":classes})
@@ -172,7 +170,7 @@ def _eval_model():
 	job = params['job']
 	datatype = params['datatype']
 	try:
-		evals = orch.eval_network(user, job, datatype)
+		evals = eval_network(user, job, datatype)
 		return STATUS_OK("Evaluating "+datatype+" on "+job+" Successful!",{'evals':{x:round(float(evals[x]),3) for x in evals}})
 	except:
 		print("Error")
@@ -183,7 +181,7 @@ def _eval_model():
 def _get_dtypes():	
 	user = request.args.get('user', 0, type=str)
 	job = request.args.get('job',  0, type=str)	
-	dtypes = orch.get_dtypes(user,job)
+	dtypes = get_dtypes(user,job)
 	return STATUS_OK("Datatypes retrieved!",{"dtypes":dtypes})
 
 @app.route('/_archive',methods=['SET'])
