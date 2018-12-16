@@ -1,7 +1,10 @@
 #!/usr/bin/python
+from dotenv import load_dotenv
 from app import app
+import os
 
-# debug=True means app will reload when changes appear
-debug = True
+# Load environment variables from .env
+load_dotenv()
+debug = os.environ['DEBUG'].lower() == 'true'
 
 app.run(port=5000,host='0.0.0.0',debug=debug)

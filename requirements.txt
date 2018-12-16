@@ -6,3 +6,4 @@ pandas
 sklearn
 tensorflow
 numpy
+dotenv

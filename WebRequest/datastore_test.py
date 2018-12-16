@@ -10,7 +10,7 @@ from datastore import *
 # side of things. 
 train = {"user":"dsherman",
 	     "project":"One more for testing purposes",
-	     "comments":"This is a note, and should be editable."
+	     "comments":"This is a note, and should be editable.",
 	     "status":"built",
 	     "input":"1D",
 	     "num_classes":"52",
